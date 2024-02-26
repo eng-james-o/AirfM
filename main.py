@@ -6,18 +6,33 @@ import sys
 
 from PySide2.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
 from PySide2.QtGui import QGuiApplication
-from PySide2.QtQuick import QQuickView #2
+from PySide2.QtQuick import QQuickView
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide2.QtCharts import QtCharts
-from PySide2.QtWidgets import QApplication, QMainWindow #2
+from PySide2.QtWidgets import QApplication, QMainWindow 
 
+class DataPoint(QObject):
+    def __init__(self, xy_tuple, parent=None):
+        super().__init__(parent)
+        self._x = xy_tuple[0]
+        self._y = xy_tuple[1]
+
+    def getX(self):
+        return self._x
+
+    def getY(self):
+        return self._y
+
+    x = Property(float, getX)
+    y = Property(float, getY)
+    
 class AirfoilModel(QObject):
-    dataLoaded = Signal()
+    dataChanged = Signal()
 
     def __init__(self, parent=None):
         self.NAME = None
         super().__init__(parent)
-        self._data = [] # supposed to contain tuples of (x,y)
+        self._data = []
     
     @Slot(str)
     def loadData(self, airfoil_path):
@@ -43,7 +58,7 @@ class AirfoilModel(QObject):
                 elif line_content[0].isalpha():
                     if self.NAME:
                         # if name has been defined already and another alphabet line is encountered, show warning and skip
-                        print(f"Warning on line{contents.index(line)}, expected numeric, instead found:\n{' '.join(line_content)}")
+                        # print(f"Warning on line{contents.index(line)}, expected numeric, instead found:\n{' '.join(line_content)}")
                         continue
                     # If line contains alphabets, its the name line
                     self.NAME = ' '.join(line_content)
@@ -53,7 +68,7 @@ class AirfoilModel(QObject):
                     if self.NUM_POINTS:
                         # if num_points has been defined already and another line with large value is encountered,
                         # show warning and skip
-                        print(f"Warning on line{contents.index(line)}, expected airfoil data, instead found:\n{' '.join(line_content)}")
+                        # print(f"Warning on line{contents.index(line)}, expected airfoil data, instead found:\n{' '.join(line_content)}")
                         continue
                     # num_points = list(map(int, list(map(float, line_content))))
                     num_points_upper = int(float(line_content[0]))
@@ -61,14 +76,17 @@ class AirfoilModel(QObject):
 
                 elif float(line_content[0]) <= 1:
                     # append Individual data point as a tuple of x and y values to raw
-                    self._data.append(tuple(map(float, line_content)))
-        #self.dataLoaded.emit(1)
+                    data_point_tuple = tuple(map(float, line_content))
+                    self._data.append(DataPoint(data_point_tuple))
+                    #self._data.append(tuple(map(float, line_content)))
+            #print(len(self._data))
+            self.dataChanged.emit()
 
     @Slot()
     def getData(self):
         return self._data
 
-    data = Property(list, fget=getData, fset=loadData, notify=dataLoaded)
+    data = Property(list, fget=getData, fset=loadData, notify=dataChanged)
     
 if __name__ == "__main__":
     app = QApplication(sys.argv)
