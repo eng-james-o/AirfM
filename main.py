@@ -74,7 +74,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     data_model = AirfoilModel()
     engine = QQmlApplicationEngine()
-    #qmlRegisterType(AirfoilModel, 'AirfoilModel', 1, 0, 'Airfoil')
     engine.rootContext().setContextProperty("dataModel", data_model)
     engine.load(os.fspath(Path(__file__).resolve().parent / "qml/main.qml"))
 

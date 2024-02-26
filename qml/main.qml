@@ -174,13 +174,13 @@ Window {
                                  }
             }
         }
-        Rectangle {
+        Item {
             anchors.top: topBar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            radius: parent.radius
-            color: "transparent"
+            //radius: parent.radius
+            //color: "transparent"
 
             ComboBox {
                 id: select_foil_combobox
@@ -208,61 +208,55 @@ Window {
                 onClicked: {
                     dataModel.loadData(select_foil_combobox.currentValue)
                     //foil_chart.update()
+                    //foil_chart.createSeries()
                 }
             }
             ChartView {
                 id: foil_chart
                 anchors.top: select_foil_combobox.bottom
-                height: 200
-                width: 300
-                plotArea: Qt.rect(5, 5, foil_chart.width - 5, foil_chart.height - 5)
-                margins { top: 10; bottom: 10; left: 10; right: 10; }
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.margins: 20
+
+                function loadChartData() {
+                    foil_chart.removeAllSeries()
+
+                    var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
+                    for (var i = 0; i < dataModel.data.length; ++i) {
+                        series.append(dataModel.data[i].x, dataModel.data[i].y);
+                        //console.log(i);
+                        //console.log(dataModel.data[i][0], dataModel.data[i][1]);
+                        //series.append(dataModel.data[i][0], dataModel.data[i][1]);
+
+                    }
+                }
+
+                Connections {
+                    target: dataModel
+                    onDataChanged: {
+                        console.log('data changed')
+                        //console.log(dataModel.data)
+                        foil_chart.loadChartData();
+                    }
+                }
+                //width: 600
+                //plotArea: Qt.rect(5, 5, foil_chart.width - 5, foil_chart.height - 5)
+                //margins { top: 10; bottom: 10; left: 10; right: 10; }
 
                 plotAreaColor: "#000020"
                 backgroundColor: "white"
                 legend.visible: false
                 antialiasing: true
 
-                LineSeries {
-                    id: line_series
-                    name: "data plot"
-                    axisX: axisX
-                    axisY: axisY
-                    /*XYPoint {
-                        x:0; y:0
-                    }
-                    XYPoint {
-                        x:0.2; y:0.3
-                    }
-                    XYPoint {
-                        x:0.4; y:0.4
-                    }
-                    XYPoint {
-                        x:0.6; y:0.3
-                    }
-                    XYPoint {
-                        x:0.8; y:0.15
-                    }
-                    XYPoint {
-                        x:1.0; y:0
-                    }*/
-                    Repeater {
-                        model: dataModel.getData()
-                        LineSeries {
-                            XYPoint {
-                                x: model.x; y:model.y
-                            }
-                        }
-                    }
-                }
                 ValueAxis {
-                    id:axisX
+                    id:myaxisX
                     min: 0; max: 1
                     tickCount: 11
                 }
                 ValueAxis {
-                    id:axisY
-                    min: 0; max: 1
+                    id:myaxisY
+                    min: -0.5; max: 0.5
                     tickCount: 11
                 }
             }
