@@ -4,17 +4,23 @@ from pathlib import Path
 import sys
 #import numpy as np
 
-from PySide2.QtCore import QObject #, QUrl, Qt, QFile
+from PySide2.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
 from PySide2.QtGui import QGuiApplication
-from PySide2.QtQml import QQmlApplicationEngine
-#from PySide2.QtCharts import QtCharts
+from PySide2.QtQuick import QQuickView #2
+from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
+from PySide2.QtCharts import QtCharts
+from PySide2.QtWidgets import QApplication, QMainWindow #2
 
 class AirfoilModel(QObject):
+    dataLoaded = Signal()
+
     def __init__(self, parent=None):
+        self.NAME = None
         super().__init__(parent)
         self._data = [] # supposed to contain tuples of (x,y)
     
-    def load(self, airfoil_path):
+    @Slot(str)
+    def loadData(self, airfoil_path):
         '''Load the data from the dat file into the object and returns 2 matrices upper and lower, which contain 2 vectors each: X and Y'''
 
         # claim and initialize variables
@@ -56,19 +62,22 @@ class AirfoilModel(QObject):
                 elif float(line_content[0]) <= 1:
                     # append Individual data point as a tuple of x and y values to raw
                     self._data.append(tuple(map(float, line_content)))
+        #self.dataLoaded.emit(1)
 
-    def data(self):
+    @Slot()
+    def getData(self):
         return self._data
+
+    data = Property(list, fget=getData, fset=loadData, notify=dataLoaded)
     
 if __name__ == "__main__":
-    app = QGuiApplication(sys.argv)
+    app = QApplication(sys.argv)
     data_model = AirfoilModel()
     engine = QQmlApplicationEngine()
+    #qmlRegisterType(AirfoilModel, 'AirfoilModel', 1, 0, 'Airfoil')
     engine.rootContext().setContextProperty("dataModel", data_model)
     engine.load(os.fspath(Path(__file__).resolve().parent / "qml/main.qml"))
-    #engine.load(r"C:\Users\PC\Documents\qt_projects\AirfoilManipulate\qml\main.qml")
 
     if not engine.rootObjects():
-        print(-1)
         sys.exit(-1)
     sys.exit(app.exec_())

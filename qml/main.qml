@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
-import QtCharts 2.3
+import QtCharts 2.15
 import "components"
 
 Window {
@@ -179,6 +179,9 @@ Window {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
+            radius: parent.radius
+            color: "transparent"
+
             ComboBox {
                 id: select_foil_combobox
                 width: 100
@@ -203,19 +206,48 @@ Window {
                 height: 60
 
                 onClicked: {
-                    //dataModel.load_data(select_foil_combobox.currentValue)
+                    dataModel.loadData(select_foil_combobox.currentValue)
                     //foil_chart.update()
                 }
             }
-            /*ChartView {
+            ChartView {
                 id: foil_chart
                 anchors.top: select_foil_combobox.bottom
                 height: 200
+                width: 300
+                plotArea: Qt.rect(5, 5, foil_chart.width - 5, foil_chart.height - 5)
+                margins { top: 10; bottom: 10; left: 10; right: 10; }
+
+                plotAreaColor: "#000020"
+                backgroundColor: "white"
+                legend.visible: false
+                antialiasing: true
+
                 LineSeries {
                     id: line_series
                     name: "data plot"
+                    axisX: axisX
+                    axisY: axisY
+                    /*XYPoint {
+                        x:0; y:0
+                    }
+                    XYPoint {
+                        x:0.2; y:0.3
+                    }
+                    XYPoint {
+                        x:0.4; y:0.4
+                    }
+                    XYPoint {
+                        x:0.6; y:0.3
+                    }
+                    XYPoint {
+                        x:0.8; y:0.15
+                    }
+                    XYPoint {
+                        x:1.0; y:0
+                    }*/
                     Repeater {
-                        model: dataModel.data
+                        model: dataModel.getData()
                         LineSeries {
                             XYPoint {
                                 x: model.x; y:model.y
@@ -223,13 +255,17 @@ Window {
                         }
                     }
                 }
-            }*/
+                ValueAxis {
+                    id:axisX
+                    min: 0; max: 1
+                    tickCount: 11
+                }
+                ValueAxis {
+                    id:axisY
+                    min: 0; max: 1
+                    tickCount: 11
+                }
+            }
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:0.33}
-}
-##^##*/
