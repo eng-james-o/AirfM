@@ -3,6 +3,7 @@ import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import QtCharts 2.15
 import "components"
+import "pages"
 
 Window {
     width: 900
@@ -174,92 +175,25 @@ Window {
                                  }
             }
         }
-        Item {
+        SwipeView {
+            id: main_swipe_view
             anchors.top: topBar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            //radius: parent.radius
-            //color: "transparent"
+            anchors.bottomMargin: 20
 
-            ComboBox {
-                id: select_foil_combobox
-                width: 100
-                height: 60
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                textRole: "text"
-                valueRole: "path"
-                model: ListModel {
-                    ListElement {
-                        // populate this model with a script that checks the contents of the directory
-                        text: "clark-y"
-                        path: "C:/Users/PC/Documents/Research and Projects/James-Mary AC design/airfoils/clarky.dat"
-                    }
-                }
+            currentIndex: 1
+            SelectFoilPage {
+                id: select_foil_page
             }
-
-            Button {
-                text: "Load data"
-                anchors.left: select_foil_combobox.right
-                anchors.verticalCenter: select_foil_combobox.verticalCenter
-                height: 60
-
-                onClicked: {
-                    dataModel.loadData(select_foil_combobox.currentValue)
-                    //foil_chart.update()
-                    //foil_chart.createSeries()
-                }
-            }
-            ChartView {
-                id: foil_chart
-                anchors.top: select_foil_combobox.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.margins: 20
-
-                function loadChartData() {
-                    foil_chart.removeAllSeries()
-
-                    var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
-                    for (var i = 0; i < dataModel.data.length; ++i) {
-                        series.append(dataModel.data[i].x, dataModel.data[i].y);
-                        //console.log(i);
-                        //console.log(dataModel.data[i][0], dataModel.data[i][1]);
-                        //series.append(dataModel.data[i][0], dataModel.data[i][1]);
-
-                    }
-                }
-
-                Connections {
-                    target: dataModel
-                    onDataChanged: {
-                        console.log('data changed')
-                        //console.log(dataModel.data)
-                        foil_chart.loadChartData();
-                    }
-                }
-                //width: 600
-                //plotArea: Qt.rect(5, 5, foil_chart.width - 5, foil_chart.height - 5)
-                //margins { top: 10; bottom: 10; left: 10; right: 10; }
-
-                plotAreaColor: "#000020"
-                backgroundColor: "white"
-                legend.visible: false
-                antialiasing: true
-
-                ValueAxis {
-                    id:myaxisX
-                    min: 0; max: 1
-                    tickCount: 11
-                }
-                ValueAxis {
-                    id:myaxisY
-                    min: -0.5; max: 0.5
-                    tickCount: 11
-                }
-            }
+        }
+        PageIndicator {
+            id: indicator
+            count: main_swipe_view.count
+            currentIndex: main_swipe_view.currentIndex
+            anchors.bottom: main_swipe_view.bottom
+            anchors.horizontalCenter: main_swipe_view.horizontalCenter
         }
     }
 }

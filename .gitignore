@@ -82,3 +82,7 @@ airfoilenv
 # temporary python files
 main2.py
 main3.py
+main2.qml
+
+# undone files
+data/coord_seligFmt

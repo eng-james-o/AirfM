@@ -11,6 +11,9 @@ from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide2.QtCharts import QtCharts
 from PySide2.QtWidgets import QApplication, QMainWindow 
 
+# import models.airfoils
+# import functions
+
 class DataPoint(QObject):
     def __init__(self, xy_tuple, parent=None):
         super().__init__(parent)
@@ -79,7 +82,6 @@ class AirfoilModel(QObject):
                     data_point_tuple = tuple(map(float, line_content))
                     self._data.append(DataPoint(data_point_tuple))
                     #self._data.append(tuple(map(float, line_content)))
-            #print(len(self._data))
             self.dataChanged.emit()
 
     @Slot()
@@ -88,6 +90,11 @@ class AirfoilModel(QObject):
 
     data = Property(list, fget=getData, fset=loadData, notify=dataChanged)
     
+class Airfoils(QObject):
+    """This model contains the available airfoils, name and path"""
+    def __init__(self):
+        pass
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     data_model = AirfoilModel()
