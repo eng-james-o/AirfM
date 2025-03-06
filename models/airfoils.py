@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 import sys
 
-from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
+from PySide6.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
 
 class Airfoil:
     """
@@ -29,12 +29,38 @@ class Airfoil:
     More detailed description, purpose, usage, important details
 
     Attributes:
-        attribute1 (type): description
-        attribute2 (type): description
+        QUARTER_CHORD (tuple (float, float)): description
+        PATH (str): description
+        NAME (str): description
+        NUM_POINTS (int): description
+        UPPER (np.ndarray): description
+        LOWER (np.ndarray): description
+        UPPER_X (np.ndarray): description
+        UPPER_Y (np.ndarray): description
+        LOWER_X (np.ndarray): description
+        LOWER_Y (np.ndarray): description
+        PLANE (str): description
+        INCIDENCE (float): description
+        X (np.ndarray): description
+        Y (np.ndarray): description
+        Z (np.ndarray): description
     
     Methods:
-        method1(parameters): description
-        method2(parameters): description
+        calculate_quarter_chord(): Calcualtes the position of the quarter chord of the airfoil
+        calculate_chord(): Calculates the length of the chord of the airfoil
+        count_points(): count the number of points for the upper curve and lower curves
+        center_foil(): centers the coordinates of the foil to make the quarter chord lie at (0,0)
+        order_points(): Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface
+        load(): Load the data from the dat file into the object and returns 2 matrices upper and lower, which contain 2 vectors each: X and Y
+        scale_to(): Scales the airfoil to the given chord
+        translate_to(): Translates the airfoil to a desired x, y position
+        rotate_to(): Rotates the airfoil to a specific angle
+        normalise(): Normalise the airfoil to a unit chord
+        plane(): Specify and change the plane to be used when exporting to solidworks txt, which requires 3 columns of airfoil data depending on the plane in which the foil will be used
+        flip(): Flip the airfoil vertically or horizontally
+        close_TE(): CLoses the trailing edge. if the trailing edge is closed, it does nothing. If blend_TE is set to True, this will close the TE to a point, or otherwise make the TE a short vertical line
+        show(): Plots an airfoil using the airfoil data points
+        export_curve_to(): Exports the airfoil coordinates to a file that is readable by CAD software
     """
     def __init__(self, airfoil_path=None, airfoil_data=None, airfoil_name:str=None, plane:str="XY", incidence:float=None, chord:float=None, position:tuple=None, blend_trailing_edge=True):
         """

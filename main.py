@@ -4,30 +4,36 @@ from pathlib import Path
 import sys
 #import numpy as np
 
-from PySide2.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
-from PySide2.QtGui import QGuiApplication
-from PySide2.QtQuick import QQuickView
-from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
-from PySide2.QtCharts import QtCharts
-from PySide2.QtWidgets import QApplication, QMainWindow 
+from PySide6.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtQuick import QQuickView
+from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
+from PySide6.QtCharts import QtCharts
+from PySide6.QtWidgets import QApplication, QMainWindow 
 
 # import models.airfoils
 # import functions
 
 class DataPoint(QObject):
-    def __init__(self, xy_tuple, parent=None):
+    def __init__(self, xyz_tuple, parent=None):
         super().__init__(parent)
-        self._x = xy_tuple[0]
-        self._y = xy_tuple[1]
+        self._x = xyz_tuple[0]
+        self._y = xyz_tuple[1]
+        if len(xyz_tuple) > 2:
+            self._z = xyz_tuple[2]
 
     def getX(self):
         return self._x
 
     def getY(self):
         return self._y
+    
+    def getZ(self):
+        return self._z
 
     x = Property(float, getX)
     y = Property(float, getY)
+    z = Property(float, getZ)
     
 class AirfoilModel(QObject):
     dataChanged = Signal()

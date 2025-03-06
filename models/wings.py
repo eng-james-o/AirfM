@@ -1,4 +1,4 @@
-"""Extra classes for wing objects and propeller objects that arebased on various Airfoil sections."""
+"""Extra classes for wing objects and propeller objects that are based on various Airfoil sections. A horizontal tail is a type of wing, a vertical tail is a single sided wing, and a propeller is a wing with a twist that is rotated about an axis."""
 print("wings imported")
 
 class wing:
