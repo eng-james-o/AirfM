@@ -80,8 +80,12 @@ Thumbs.db
 # virtual environment
 .venv
 
+# vs code settings
+.vscode
+
 # temporary python files
 __pycache__
 
 # undone files
 data/coord_seligFmt
+airfoils/airfoil_archive

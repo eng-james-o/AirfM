@@ -8,25 +8,65 @@ Classes:
 """
 # This Python file uses the following encoding: utf-8
 
-from typing import Dict
+# from typing import Dict
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.misc import derivative
+# from scipy.misc import derivative
 import matplotlib.pyplot as plt
 import re
 
 import os
-from pathlib import Path
-import sys
+# from pathlib import Path
+# import sys
 
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
+import logging
 
-class Airfoil_new:
-    '''
-    Usage
-    When an object is initialised, it automatically loads the data and name, and does the necessary initial transformations. this leaves the object ready for visualisation, and then optionally any further transformations that the user may want to do.
-    '''
-    def __init__(self, airfoil_path=None, airfoil_name:str=None, plane:str="XY", incidence:float=None, chord:float=None, position:tuple=None, TE_treatment:str="point"):
+from .extras import DataPoint
+
+class Airfoil_new(QObject):
+    """
+    Creates an airfoil object which can be rotated, moved, scaled. Base class for all airfoil types defined in the module
+
+    More detailed description, purpose, usage, important details
+
+    Attributes:
+        QUARTER_CHORD (tuple (float, float)): description
+        PATH (str): description
+        NAME (str): description
+        NUM_POINTS (int): description
+        UPPER (np.ndarray): description
+        LOWER (np.ndarray): description
+        UPPER_X (np.ndarray): description
+        UPPER_Y (np.ndarray): description
+        LOWER_X (np.ndarray): description
+        LOWER_Y (np.ndarray): description
+        PLANE (str): description
+        INCIDENCE (float): description
+        X (np.ndarray): description
+        Y (np.ndarray): description
+        Z (np.ndarray): description
+    
+    Methods:
+        calculate_quarter_chord(): Calcualtes the position of the quarter chord of the airfoil
+        calculate_chord(): Calculates the length of the chord of the airfoil
+        count_points(): count the number of points for the upper curve and lower curves
+        center_foil(): centers the coordinates of the foil to make the quarter chord lie at (0,0)
+        order_points(): Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface
+        load(): Load the data from the dat file into the object and returns 2 matrices upper and lower, which contain 2 vectors each: X and Y
+        scale_to(): Scales the airfoil to the given chord
+        translate_to(): Translates the airfoil to a desired x, y position
+        rotate_to(): Rotates the airfoil to a specific angle
+        normalise(): Normalise the airfoil to a unit chord
+        plane(): Specify and change the plane to be used when exporting to solidworks txt, which requires 3 columns of airfoil data depending on the plane in which the foil will be used
+        flip(): Flip the airfoil vertically or horizontally
+        close_TE(): CLoses the trailing edge. if the trailing edge is closed, it does nothing. If blend_TE is set to True, this will close the TE to a point, or otherwise make the TE a short vertical line
+        show(): Plots an airfoil using the airfoil data points
+        export_curve_to(): Exports the airfoil coordinates to a file that is readable by CAD software
+    """
+    dataChanged = Signal()
+
+    def __init__(self, airfoil_path=None, airfoil_name:str=None, plane:str="XY", incidence:float=None, chord:float=None, position:tuple=None, TE_treatment:str="point", parent=None):
         """
         Args:
             airfoil_path (str): path to airfoil dat file
@@ -38,18 +78,25 @@ class Airfoil_new:
             offset (float): the position offset of the airfoil (horizaontal, vertical)
             TE_treatment (str): how to treat the trailing edge. "point" closes the TE to a point, "line" closes the TE to a line
         """
+        self.NAME = None
+        super().__init__(parent)
+        self.LOADED = False 
+        # becomes true if data is in the airfoil
+        # and false if it is empty, either upon initialisatoin, or reset
+        # also remember the dataChanged signal which is emited when the load method is run
+
         if airfoil_path:
             # if path to airfoil data is given
             self.PATH = airfoil_path
-            self.NUM_POINTS = None
-            self.UPPER, self.LOWER = self.load(self.PATH)
-        if airfoil_name:
-            self.NAME = airfoil_name
+            self.NAME, self.NUM_POINTS, self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.load(self.PATH)
+        if not self.NAME and not airfoil_name:
+            # no name has been supplied
+            logging.error("No name has been supplied")
             # check if the name supplied is similar with the name in the airfoil file, if not, raise a warning
             # if no name is supplied here and in the file, raise an error, demanding for a name
         
-        self.UPPER_X, self.UPPER_Y = self.UPPER
-        self.LOWER_X, self.LOWER_Y = self.LOWER
+        # self.UPPER_X, self.UPPER_Y = self.UPPER
+        # self.LOWER_X, self.LOWER_Y = self.LOWER
 
         # self.close_TE(blend = blend_trailing_edge)
 
@@ -58,24 +105,92 @@ class Airfoil_new:
 
         # center foil, then scale, then rotate, then translate
         # center the airfoil quarter_chord
-        self.center_foil()
+        if self.LOADED:
+            # move this functionality to a separate function thqt is called here, and is also called if the airfoil is initialised empty and loaded later
+            self.center_foil()
 
-        # but if chord is given scale the foil to the given chord. 
-        if chord:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
+            # but if chord is given scale the foil to the given chord. 
+            if chord:
+                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
 
-        # rotate airfoil
-        if incidence:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
+            # rotate airfoil
+            if incidence:
+                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
 
-        # translate foil to desired position
-        if position:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
-        
-        self.X, self.Y = self.order_points()
-        self.Z = np.zeros_like(self.X)
+            # translate foil to desired position
+            if position:
+                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
+            
+            # self.X, self.Y = self.order_points()
+            # self.Z = np.zeros_like(self.X)
+
+    def calculate_quarter_chord(self):
+        """
+        Calcualtes the position of the quarter chord of the airfoil and sets the self.QUARTER_CHORD parameter
+
+        Returns:
+            tuple: x, y
+        """
+        # self.QUARTER_CHORD =  (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
+        return (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
     
-    def load(self, filename):
+    def calculate_chord(self):
+        """
+        Calculates the length of the chord of the airfoil
+
+        Returns:
+            float: chord
+        """
+        return np.sqrt((self.UPPER_X[-1] - self.UPPER_X[0])**2 + (self.UPPER_Y[-1] - self.UPPER_Y[0])**2)
+    
+    def count_points(self):
+        """
+        count the number of points for the upper curve and lower curves. This method is necessary if the airfoil_data is given instead of the path
+        
+        Args:
+        Returns:
+            tuple: num_upper, num_lower
+        """
+        pass
+
+    def center_foil(self):
+        '''centers the coordinates of the foil to make the quarter chord lie at (0,0)'''
+        
+        self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(0,0)
+
+    def order_points(self):
+        """
+        Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface.
+
+        Returns: 
+            tuple: X, Y - X coordinates and Y coordinates of the foil from LE to TE and back to LE
+        """
+        # check if the data is in the correct order.
+        # CORRECT ORDER: x values of upper curve goes from small to high and lower curve from high to small
+        if (self.UPPER_X[0] < self.UPPER_X[-1]) and (self.LOWER_X[0] < self.LOWER_X[-1]):
+            # Upper curve goes from small to high but lower cuve also goes from low to high. lower curve needs to reverse
+            self.LOWER_X = np.flipud(self.LOWER_X)
+            self.LOWER_Y = np.flipud(self.LOWER_Y)
+            print('Lower curve reversed')
+        
+        # implement code to remove duplicate TE point
+        # if last point of upper curve == first point of lower curve, remove the TE point
+        # first point in lower curve
+        if (self.UPPER_X[-1] == self.LOWER_X[0]) and (self.UPPER_Y[-1] == self.LOWER_Y[0]):
+            lower_x = self.LOWER_X[1:]
+            lower_y = self.LOWER_Y[1:]
+        else:
+            lower_x = self.LOWER_X[:]
+            lower_y = self.LOWER_Y[:]
+
+        # concatenate X and Y coordinates
+        X = np.concatenate((self.UPPER_X, lower_x))
+        Y = np.concatenate((self.UPPER_Y, lower_y))
+
+        return X, Y
+
+    @Slot(str)
+    def load(self, filename:str):
         """
     Reads a Selig-format airfoil file and returns the airfoil name,
     the total number of points, and four NumPy arrays:
@@ -191,8 +306,297 @@ class Airfoil_new:
         # Add data into the class instance parameters
         self.NAME = name
         self.NUM_POINTS = num_points
+        self.dataChanged.emit()
         
         return name, num_points, x_upper, y_upper, x_lower, y_lower
+
+
+    def scale_to(self, chord):
+        """
+        Scales the airfoil to the given chord.
+        Args:
+            chord: the desired chord of the airfoil
+        
+        Returns:
+            tuple: upper_x, upper_y, lower_x, lower_y
+        """
+        #calculate the scaling factor based on the current chord and the desired chord
+        old_chord = self.calculate_chord()
+        sc_factor = chord / old_chord
+        
+        # if quarter_chord is not at (0,0), you need to translate it to (0,0), perform scale operation and restore the translation
+        quarter_chord = self.calculate_quarter_chord()
+        if quarter_chord != (0.0, 0.0):
+            x_u_t, y_u_t, x_l_t, y_l_t = self.__translate(self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y, -quarter_chord[0], -quarter_chord[1])
+            x_u_s, y_u_s, x_l_s, y_l_s = self.__scale(x_u_t, y_u_t, x_l_t, y_l_t, sc_factor)
+            x_u_o, y_u_o, x_l_o, y_l_o = self.__translate(x_u_s, y_u_s, x_l_s, y_l_s, quarter_chord[0], quarter_chord[1])
+        else:
+           x_u_o, y_u_o, x_l_o, y_l_o = self.__scale(self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y, sc_factor)
+
+        return x_u_o, y_u_o, x_l_o, y_l_o
+
+    def translate_to(self, x_position:float, y_position:float):
+        """
+        Translates the airfoil to a desired x, y position
+        Args:
+            x_position (float): desired x position of the foil
+            y_position (float): desired y position of the foil
+
+        Returns:
+            tuple
+        """
+        # calculate the distance between the quarter chord and the desired position
+        quarter_chord_x, quarter_chord_y = self.calculate_quarter_chord()
+
+        dx = x_position - quarter_chord_x
+        dy = y_position - quarter_chord_y
+        x_u_t, y_u_t, x_l_t, y_l_t = self.__translate(self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y, dx, dy)
+
+        return x_u_t, y_u_t, x_l_t, y_l_t
+
+    def rotate_to(self, angle):
+        """
+        Rotates the airfoil to a specific angle
+        Args:
+            angle
+        
+        Returns:
+            tuple
+        """
+        da = angle - self.INCIDENCE
+
+        x_u_r, y_u_r, x_l_r, y_l_r = self.__rotate(self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y, da)
+
+        # update foil incidence angle
+        self.INCIDENCE = angle
+
+        return x_u_r, y_u_r, x_l_r, y_l_r
+    
+    def normalise(self):
+        """
+        Normalise the airfoil to a unit chord
+        """
+        # consider normalise after the foil has been offset, which will require a more robust implementation
+        pass
+
+    def plane(self, plane):
+        """
+        Specify and change the plane to be used when exporting to solidworks txt, which requires 3 columns
+        of airfoil data depending on the plane in which the foil will be used
+        """
+        # if plane is xy or XY, X data maps to X column and Y data maps to Y column
+        # if plane is yx or YX, X data maps to Y column and Y data maps to X column
+        # if plane is xz or XZ, X data maps to X column and Y data maps to Z column
+        # if plane is zx or ZX, X data maps to Z column and Y data maps to X column
+        # if plane is yz or YZ, X data maps to Y column and Y data maps to Z column
+        # if plane is zy or ZY, X data maps to Z column and Y data maps to Y column
+        # merge the implementation of the plane and flip methods
+        pass
+
+    def flip(self, axis="hor"):
+        """
+        Flip the airfoil vertically or horizontally
+        """
+        pass
+
+    def close_TE(self, blend):
+        """
+        CLoses the trailing edge. if the trailing edge is closed, it does nothing.
+        If blend_TE is set to True, this will close the TE to a point, or otherwise make the TE a short vertical line
+        Short TE line is preferable for hot-wire manufacturing but choice is left to user
+        """
+        ### does this implementation add a new point to the trailing edge or does it simply move the last point to the middle of the trailing edge?
+        # also ensure that the line does not exceed a certain threshold size for very large scaled foils
+        # call this function before any transformation
+        # if x_upper[-1] == y_upper[-1]
+        
+        if (self.UPPER_X[-1] != self.LOWER_X[-1]):
+            self.UPPER_X[-1] = self.LOWER_X[-1] = (self.UPPER_X[-1] + self.LOWER_X[-1])/2
+
+        if self.UPPER_Y[-1] != self.LOWER_Y[-1]:
+            if blend:
+                self.UPPER_Y[-1] = self.LOWER_Y[-1] = (self.UPPER_Y[-1] + self.LOWER_Y[-1])/2
+            else:
+                # close TE as a line instead of to a point. simply add a point between the end of the upper and lower curves
+                self.UPPER_Y = np.append(self.UPPER_Y, (self.UPPER_Y[-1] + self.LOWER_Y[-1])/2)
+                self.UPPER_X = np.append(self.UPPER_X, self.UPPER_X[-1])
+                self.LOWER_Y = np.append(self.LOWER_Y, (self.UPPER_Y[-1] + self.LOWER_Y[-1])/2)
+                self.LOWER_X = np.append(self.LOWER_X, self.LOWER_X[-1])
+        
+    def show(self, show_camber=False, figsize=(12,8), save=''):
+        """
+        Plots an airfoil using the airfoil data points
+        foilname: name of airfoil
+        show_camber: whether or not to show camber
+        figsize: size of plot
+        """
+        # implement passing other arguments for fig and for ax into the method
+        # implement save
+        # implement plotting by interpolation
+
+        fig, ax = plt.subplots(figsize=figsize)
+
+        # this requires that 2 vectors are received, one fo the upper curve and another for the lower curve
+        # the upper curve contains 2 vectors, X and Y. same with the lower curve
+        ax.plot(self.UPPER_X, self.UPPER_Y, label = 'upper')
+        ax.plot(self.LOWER_X, self.LOWER_Y, label = 'lower')
+
+        TE_ax = fig.add_axes([0.65, 0.65, 0.2, 0.2])
+        TE_ax.plot(self.UPPER_X[-5:], self.UPPER_Y[-5:])
+        TE_ax.plot(self.LOWER_X[ :5], self.LOWER_Y[ :5])
+
+        ax.set_aspect('equal', adjustable='datalim')
+        ax.set_title(self.NAME)
+        ax.set_xlabel("X")
+
+        TE_ax.set_title("Trailing edge")
+        # add text to show number of points used
+
+        fig.show()
+
+    def export_curve_to(self, format='solidworks_curve'):
+        """
+        Exports the airfoil coordinates to a file
+        format: "SW txt" - the airfoil coordinates are saved as txt prepared to be used as a solidworks curve .txt
+                "SW curve" - the airfoil coordinates are saved as a solidworks curve .sldcrv file
+                "xml" - the airfoil coordinates are saved as xml file for xflr5 .xml
+                "NURBS" - the airfoil coordinates are saved as a NURBS curve  
+                "csv" - the airfoil coordinates are saved as a csv file .csv
+
+        """
+        if format == "solidworks_curve":
+            file_ext = ".txt"
+            self.EXPORT_FILENAME = self.NAME.replace(' ', '_') + file_ext
+            with open(self.EXPORT_FILENAME, mode="w") as file:
+                for x,y,z in zip(self.X, self.Y, self.Z):
+                    if self.PLANE == 'xy' or "XY":
+                        file.write(f"{str(x)}\t{str(y)}\t{str(z)}\n")
+                    elif self.PLANE == 'xz' or 'XZ':
+                        file.write(f"{str(x)}\t{str(z)}\t{str(y)}\n")
+                    elif self.PLANE == 'yz' or 'YZ':
+                        file.write(f"{str(y)}\t{str(z)}\t{str(x)}\n")
+            
+        elif format == "xml":
+            file_ext = ".xml"
+            self.EXPORT_FILENAME = self.NAME.replace(' ', '_') + file_ext
+
+            # implement xml export
+            # create an xml file with the airfoil coordinates
+            # <?xml version="1.0"?>
+            # <airfoil>
+            #     <name>airfoil name</name>
+            #     <points>
+            #         <point>
+            #             <x>0.0</x>
+            #             <y>0.0</y>
+            #             <z>0.0</z>
+            #         </point>
+            #     </points>
+            # </airfoil>
+            # save the xml file
+        else:
+            print(f"Invalid format: {format}")
+
+        print(f'{self.NAME} saved as {format} file - {self.EXPORT_FILENAME}')
+    
+    # Mangled internal methods
+    
+    def __rotate(self, x_upper, y_upper, x_lower, y_lower, angle):
+        """
+        Rotate the airfoil by {incidence} degrees about the origin (0,0).
+        
+        Args:
+            x_upper
+            y_upper
+            x_lower
+            y_lower
+            incidence: the angle in degrees to rotate the airfoil. +ve values rotate the airfoil CW and -ve values rotate the airfoil CCW
+        
+        Returns:
+            tuple: upper_x, upper_y, lower_x, lower_y
+        """
+        print(f"rotate by {angle}")
+        # this can only be called after the airfoil quarter chord has been moved to the origin as it rotates the
+        # foil coordinates about the origin
+        # if this method is caled on a foil that has been moved away from the origin, it should move the foil to the
+        # origin, rotate the foil and then move the foil  back to its position
+        # find a way to save the incidence angle of the airfoil
+
+        angle_rad = np.deg2rad(angle)
+        self.ROTATION_MATRIX = np.array([
+            [ np.cos(angle_rad), -np.sin(angle_rad)],
+            [ np.sin(angle_rad),  np.cos(angle_rad)],
+            ])
+        # rotate upper x and y values
+        rotated_upper = np.dot(np.column_stack((x_upper, y_upper)), self.ROTATION_MATRIX)
+        upper_x, upper_y = rotated_upper[:,0], rotated_upper[:,1]
+
+        # rotate lower x and y values
+        rotated_lower = np.dot(np.column_stack((x_lower, y_lower)), self.ROTATION_MATRIX)
+        lower_x, lower_y = rotated_lower[:,0], rotated_lower[:,1]
+
+        return upper_x, upper_y, lower_x, lower_y
+    
+    def __translate(self, x_upper, y_upper, x_lower, y_lower, dx, dy):
+        """
+        Moves the airfoil by a specific distance in the vertical and horizontal. 
+        horizontal_offset: positive values move the airfoil rightward
+        vertical_offset: positive values move the airfoil upward
+        Args:
+            x_upper, y_upper, x_lower, y_lower, dx=0, dy=0
+        Returns:
+            tuple: upper_x, upper_y, lower_x, lower_y
+        """
+        print(f"translate by {dx}, {dy}")
+        self.TRANSLATION_MATRIX = np.array([
+            [1, 0, dx],
+            [0, 1, dy],
+            [0, 0,  1]
+        ])
+
+        # augment coordinates with extra column of 1s
+        upper_homogenous = np.vstack((x_upper, y_upper, np.ones_like(x_upper)))
+        lower_homogenous = np.vstack((x_lower, y_lower, np.ones_like(x_lower)))
+
+        # translate upper x and y values
+        translated_upper = np.dot( self.TRANSLATION_MATRIX, upper_homogenous)
+        upper_x, upper_y = translated_upper[0], translated_upper[1]
+
+        # translate lower x and y values
+        translated_lower = np.dot( self.TRANSLATION_MATRIX, lower_homogenous)
+        lower_x, lower_y = translated_lower[0], translated_lower[1]
+
+        return upper_x, upper_y, lower_x, lower_y
+    
+    def __scale(self, x_upper, y_upper, x_lower, y_lower, scale_factor):
+        """
+        Scales the airfoil by scale factor.
+        Args:
+            x_upper
+            y_upper
+            x_lower
+            y_lower
+            scale_factor: factor to scale the airfoil
+        
+        Returns:
+            tuple: upper_x, upper_y, lower_x, lower_y
+        """
+        print(f"scale by {scale_factor}")
+        self.SCALING_MATRIX = np.array([
+            [scale_factor,     0],
+            [0,     scale_factor]
+        ])
+
+        # rotate upper x and y values
+        scaled_upper = np.dot(np.column_stack((x_upper, y_upper)), self.SCALING_MATRIX)
+        upper_x, upper_y = scaled_upper[:,0], scaled_upper[:,1]
+
+        # rotate lower x and y values
+        scaled_lower = np.dot(np.column_stack((x_lower, y_lower)), self.SCALING_MATRIX)
+        lower_x, lower_y = scaled_lower[:,0], scaled_lower[:,1]
+
+        return upper_x, upper_y, lower_x, lower_y
+
 
 
 class Airfoil:

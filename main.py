@@ -12,6 +12,7 @@ from PySide2.QtCharts import QtCharts
 from PySide2.QtWidgets import QApplication, QMainWindow 
 
 from models.extras import DataPoint, AirfoilListModel
+from models.airfoils import Airfoil_new
 from scripts.functions import get_foils_from_dir
 import globals
     
@@ -75,18 +76,13 @@ class AirfoilModel(QObject):
         return self._data
 
     data = Property(list, fget=getData, fset=loadData, notify=dataChanged)
-    
-class Airfoils(QObject):
-    """This model contains the available airfoils, name and path"""
-    def __init__(self):
-        pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    data_model = AirfoilModel()
+    data_model = Airfoil_new()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("dataModel", data_model)
-    engine.load(globals.MAIN_QML_FILE)
+    engine.load(globals.MAIN_QML_FILE) # SPLASH_QML_FILE
 
     if not engine.rootObjects():
         sys.exit(-1)
