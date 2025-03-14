@@ -23,6 +23,7 @@ tags
 .DS_Store
 .directory
 *.debug
+*.zip
 Makefile*
 *.prl
 *.app
@@ -73,16 +74,14 @@ Thumbs.db
 *.dll
 *.exe
 
-# UI designs
+# Adobe UI designs
 *.xd
 
 # virtual environment
-airfoilenv
+.venv
 
 # temporary python files
-main2.py
-main3.py
-main2.qml
+__pycache__
 
 # undone files
 data/coord_seligFmt

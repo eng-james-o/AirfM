@@ -5,7 +5,6 @@ Classes:
     Airfoil: base class of all classes implemented in the module
     NACA4DigitFoil:
     NACA5DigitFoil:
-    Airfoils: A Qt ListModel that contains the names and paths of all the available airfoils in the database
 """
 # This Python file uses the following encoding: utf-8
 
@@ -20,7 +19,181 @@ import os
 from pathlib import Path
 import sys
 
-from PySide6.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
+from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
+
+class Airfoil_new:
+    '''
+    Usage
+    When an object is initialised, it automatically loads the data and name, and does the necessary initial transformations. this leaves the object ready for visualisation, and then optionally any further transformations that the user may want to do.
+    '''
+    def __init__(self, airfoil_path=None, airfoil_name:str=None, plane:str="XY", incidence:float=None, chord:float=None, position:tuple=None, TE_treatment:str="point"):
+        """
+        Args:
+            airfoil_path (str): path to airfoil dat file
+            airfoil_data (list or np.ndarray): an iterable containing the vectors upper and lower of the coordinates of the airfoil. Only one of airfoil_path or airfoil_data can be used
+            airfoil_name (str): the name of the foil. only used if airfoil_data is used and not airfoil_path
+            plane (str): one of "XY", "YX", OR "YZ", "ZY" OR "XZ", "ZX". plane is defined horizontal first, then vertical. i.e XY has chord on X and thickness on Y. defaults to "XY"
+            incidence (float): angle of incidence between chord and horizontal
+            chord (float): chord value to scale the airfoil coordinates
+            offset (float): the position offset of the airfoil (horizaontal, vertical)
+            TE_treatment (str): how to treat the trailing edge. "point" closes the TE to a point, "line" closes the TE to a line
+        """
+        if airfoil_path:
+            # if path to airfoil data is given
+            self.PATH = airfoil_path
+            self.NUM_POINTS = None
+            self.UPPER, self.LOWER = self.load(self.PATH)
+        if airfoil_name:
+            self.NAME = airfoil_name
+            # check if the name supplied is similar with the name in the airfoil file, if not, raise a warning
+            # if no name is supplied here and in the file, raise an error, demanding for a name
+        
+        self.UPPER_X, self.UPPER_Y = self.UPPER
+        self.LOWER_X, self.LOWER_Y = self.LOWER
+
+        # self.close_TE(blend = blend_trailing_edge)
+
+        self.PLANE = plane
+        self.INCIDENCE = 0
+
+        # center foil, then scale, then rotate, then translate
+        # center the airfoil quarter_chord
+        self.center_foil()
+
+        # but if chord is given scale the foil to the given chord. 
+        if chord:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
+
+        # rotate airfoil
+        if incidence:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
+
+        # translate foil to desired position
+        if position:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
+        
+        self.X, self.Y = self.order_points()
+        self.Z = np.zeros_like(self.X)
+    
+    def load(self, filename):
+        """
+    Reads a Selig-format airfoil file and returns the airfoil name,
+    the total number of points, and four NumPy arrays:
+    x_upper, y_upper, x_lower, y_lower.
+
+    The file is expected to contain either a header (the first non-empty line)
+    with the airfoil name or no header. In the latter case, the file's name
+    (without extension) is used as the airfoil name.
+
+    The coordinate data lines should have the format:
+        [index]  x-coordinate  y-coordinate
+    where the index is optional. In a Selig file the coordinates are usually
+    ordered such that the first section (upper surface) runs from the trailing
+    edge to the leading edge and the second section (lower surface) runs from
+    the leading edge to the trailing edge. This function splits the data at the
+    leading edge (identified as the point with the minimum x value) and then
+    reverses each section so that:
+      - x_upper, y_upper run from the leading edge to the trailing edge.
+      - x_lower, y_lower run from the trailing edge to the leading edge.
+    
+    It also checks for a duplicate trailing edge point (often present in Selig files)
+    and removes it before concatenation.
+    
+    Args:
+        filename (str): Path to the airfoil file.
+    
+    Returns:
+        name (str): Airfoil name.
+        num_points (int): Total number of coordinate points defined in the file.
+        x_upper (np.ndarray): x-coordinates for the upper surface.
+        y_upper (np.ndarray): y-coordinates for the upper surface.
+        x_lower (np.ndarray): x-coordinates for the lower surface.
+        y_lower (np.ndarray): y-coordinates for the lower surface.
+    """
+        # Read and strip file lines; ignore completely blank lines.
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        lines = [line.strip() for line in lines if line.strip() != '']
+
+        # Define a regex pattern to extract (optional index) and two numbers (x and y)
+        # Pattern explanation:
+        #   ^\s*           -> start of the line (allowing whitespace)
+        #   (?:\d+\s+)?    -> an optional index followed by whitespace
+        #   ([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)  -> x-coordinate (float, with optional exponent)
+        #   \s+            -> whitespace separator
+        #   ([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)  -> y-coordinate (float, with optional exponent)
+        coordinate_pattern = re.compile(
+            r'^\s*(?:\d+\s+)?([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)'
+        )
+
+        # Determine if the first non-empty line is a header (name) or coordinate data.
+        if not lines:
+            raise ValueError("File is empty.")
+        first_line = lines[0]
+        if coordinate_pattern.match(first_line):
+            # No header present; use the file name (without extension) as the airfoil name.
+            name = os.path.splitext(os.path.basename(filename))[0]
+            data_lines = lines
+        else:
+            name = first_line
+            data_lines = lines[1:]
+        
+        # Extract coordinate data using regex
+        data = []
+        for line in data_lines:
+            match = coordinate_pattern.match(line)
+            if match:
+                try:
+                    x_val = float(match.group(1))
+                    y_val = float(match.group(2))
+                    data.append((x_val, y_val))
+                except ValueError:
+                    continue  # Skip lines that cannot be parsed as floats
+        
+        num_points = len(data)
+        if num_points < 2:
+            raise ValueError("Not enough data points were found in the file.")
+        
+        # Convert to NumPy array for easier processing
+        data = np.array(data)  # shape (num_points, 2)
+        x_all = data[:, 0]
+        y_all = data[:, 1]
+        
+        # Identify the leading edge point as the one with the minimum x value
+        i_le = np.argmin(x_all)
+        
+        # According to Selig format:
+        # - Upper surface data: from the start of the file (trailing edge) to the leading edge.
+        # - Lower surface data: from the leading edge to the end of the file (trailing edge).
+        upper_data = data[:i_le+1]
+        lower_data = data[i_le:]
+        
+        # Remove a duplicate trailing edge point if it exists.
+        # Typically the trailing edge appears as the first point of the upper surface and the last point of the lower surface.
+        if np.allclose(upper_data[0], lower_data[-1], atol=1e-6):
+            lower_data = lower_data[:-1]
+        
+        # Reorder the data to match the desired output:
+        # For the upper surface: desired order is from leading edge to trailing edge.
+        #   (File order is trailing edge -> ... -> leading edge, so we reverse it)
+        upper_data_reversed = upper_data[::-1]
+        
+        # For the lower surface: desired order is from trailing edge to leading edge.
+        #   (File order is leading edge -> ... -> trailing edge, so we reverse it)
+        lower_data_reversed = lower_data[::-1]
+        
+        # Split into separate arrays.
+        x_upper = upper_data_reversed[:, 0]
+        y_upper = upper_data_reversed[:, 1]
+        x_lower = lower_data_reversed[:, 0]
+        y_lower = lower_data_reversed[:, 1]
+
+        # Add data into the class instance parameters
+        self.NAME = name
+        self.NUM_POINTS = num_points
+        
+        return name, num_points, x_upper, y_upper, x_lower, y_lower
+
 
 class Airfoil:
     """
@@ -196,10 +369,8 @@ class Airfoil:
             print(f"Error -> {e}")
         else:
             for line in contents:
-                # strip whitespaces and split the line by spaces
-                line_content = line.strip().split()
-                if len(line_content) < 1:
-                    # continue to next line if the line is Empty
+                line_content = line.strip().split() # strip whitespaces and split the line by spaces
+                if len(line_content) < 1: # continue to next line if the line is Empty
                     continue
                 
                 # non-empty line starting with alphabet
@@ -223,8 +394,7 @@ class Airfoil:
                     num_points_lower = int(float(line_content[1]))
 
                 elif float(line_content[0]) <= 1:
-                    # append Individual data point as a tuple of x and y values to raw
-                    raw.append(tuple(map(float, line_content)))
+                    raw.append(tuple(map(float, line_content))) # append Individual data point as a tuple of x and y values to raw
         
         # this assumes that a line is given as number of points in the file
         # use a conditional block to split the data at the TE, if the data started at the LE and vice versa 
@@ -326,6 +496,7 @@ class Airfoil:
         If blend_TE is set to True, this will close the TE to a point, or otherwise make the TE a short vertical line
         Short TE line is preferable for hot-wire manufacturing but choice is left to user
         """
+        ### does this implementation add a new point to the trailing edge or does it simply move the last point to the middle of the trailing edge?
         # also ensure that the line does not exceed a certain threshold size for very large scaled foils
         # call this function before any transformation
         # if x_upper[-1] == y_upper[-1]
@@ -377,25 +548,46 @@ class Airfoil:
     def export_curve_to(self, format='solidworks_curve'):
         """
         Exports the airfoil coordinates to a file
-        format: "solidworks" - the airfoil coordinates are saved as txt prepared to be used as a solidworks curve
-                "xml" - the airfoil coordinates are saved as xml file for xflr5
+        format: "SW txt" - the airfoil coordinates are saved as txt prepared to be used as a solidworks curve .txt
+                "SW curve" - the airfoil coordinates are saved as a solidworks curve .sldcrv file
+                "xml" - the airfoil coordinates are saved as xml file for xflr5 .xml
+                "NURBS" - the airfoil coordinates are saved as a NURBS curve  
+                "csv" - the airfoil coordinates are saved as a csv file .csv
+
         """
         if format == "solidworks_curve":
             file_ext = ".txt"
+            self.EXPORT_FILENAME = self.NAME.replace(' ', '_') + file_ext
+            with open(self.EXPORT_FILENAME, mode="w") as file:
+                for x,y,z in zip(self.X, self.Y, self.Z):
+                    if self.PLANE == 'xy' or "XY":
+                        file.write(f"{str(x)}\t{str(y)}\t{str(z)}\n")
+                    elif self.PLANE == 'xz' or 'XZ':
+                        file.write(f"{str(x)}\t{str(z)}\t{str(y)}\n")
+                    elif self.PLANE == 'yz' or 'YZ':
+                        file.write(f"{str(y)}\t{str(z)}\t{str(x)}\n")
             
-        elif format == "xml" or format == "XML":
+        elif format == "xml":
             file_ext = ".xml"
+            self.EXPORT_FILENAME = self.NAME.replace(' ', '_') + file_ext
 
-        self.EXPORT_FILENAME = self.NAME.replace(' ', '_') + file_ext
+            # implement xml export
+            # create an xml file with the airfoil coordinates
+            # <?xml version="1.0"?>
+            # <airfoil>
+            #     <name>airfoil name</name>
+            #     <points>
+            #         <point>
+            #             <x>0.0</x>
+            #             <y>0.0</y>
+            #             <z>0.0</z>
+            #         </point>
+            #     </points>
+            # </airfoil>
+            # save the xml file
+        else:
+            print(f"Invalid format: {format}")
 
-        with open(self.EXPORT_FILENAME, mode="w") as file:
-            for x,y,z in zip(self.X, self.Y, self.Z):
-                if self.PLANE == 'xy' or "XY":
-                    file.write(f"{str(x)}\t{str(y)}\t{str(z)}\n")
-                elif self.PLANE == 'xz' or 'XZ':
-                    file.write(f"{str(x)}\t{str(z)}\t{str(y)}\n")
-                elif self.PLANE == 'yz' or 'YZ':
-                    file.write(f"{str(y)}\t{str(z)}\t{str(x)}\n")
         print(f'{self.NAME} saved as {format} file - {self.EXPORT_FILENAME}')
     
     # Mangled internal methods
@@ -599,8 +791,8 @@ class NACA4DigitFoil(Airfoil):
         return np.where(x < p, (m/p**2)*(2*p*x - x**2), (2*m/(1 - p)**2)*(p - x))
 
 class NACA5DigitFoil(Airfoil):
-    def __init__(self, naca_digits, n_points, **kwargs):
-        self.NUM_POINTS = n_points
+    def __init__(self, naca_digits:str, n_points, **kwargs):
+        self.NUM_POINTS = int(n_points) # ensures that the number of points is an integer
 
         self.l = int(naca_digits[0]) * 0.15
         self.p = int(naca_digits[1]) * 0.05
@@ -630,103 +822,3 @@ class NACA6DigitFoil(Airfoil):
     def __init__(self):
         pass
 
-##########
-# Qt Model classes
-class DataPoint(QObject):
-    def __init__(self, xy_tuple, parent=None):
-        super().__init__(parent)
-        self._x = xy_tuple[0]
-        self._y = xy_tuple[1]
-
-    def getX(self):
-        return self._x
-
-    def getY(self):
-        return self._y
-
-    x = Property(float, getX)
-    y = Property(float, getY)
-    
-class AirfoilModel(QObject):
-    dataChanged = Signal()
-
-    def __init__(self, parent=None):
-        self.NAME = None
-        super().__init__(parent)
-        self._data = []
-    
-    @Slot(str)
-    def loadData(self, airfoil_path):
-        '''Load the data from the dat file into the object and returns 2 matrices upper and lower, which contain 2 vectors each: X and Y'''
-
-        # claim and initialize variables
-        self.NUM_POINTS = None
-
-        try:
-            with open(airfoil_path) as airfoil_dat:
-                contents = airfoil_dat.readlines()
-        except Exception as e:
-            print(f"Error -> {e}")
-        else:
-            for line in contents:
-                # strip whitespaces and split the line by spaces
-                line_content = line.strip().split()
-                if len(line_content) < 1:
-                    # continue to next line if the line is Empty
-                    continue
-                
-                # non-empty line starting with alphabet
-                elif line_content[0].isalpha():
-                    if self.NAME:
-                        # if name has been defined already and another alphabet line is encountered, show warning and skip
-                        # print(f"Warning on line{contents.index(line)}, expected numeric, instead found:\n{' '.join(line_content)}")
-                        continue
-                    # If line contains alphabets, its the name line
-                    self.NAME = ' '.join(line_content)
-
-                elif float(line_content[0]) > 1:
-                    # Number of data points
-                    if self.NUM_POINTS:
-                        # if num_points has been defined already and another line with large value is encountered,
-                        # show warning and skip
-                        # print(f"Warning on line{contents.index(line)}, expected airfoil data, instead found:\n{' '.join(line_content)}")
-                        continue
-                    # num_points = list(map(int, list(map(float, line_content))))
-                    num_points_upper = int(float(line_content[0]))
-                    num_points_lower = int(float(line_content[1]))
-
-                elif float(line_content[0]) <= 1:
-                    # append Individual data point as a tuple of x and y values to raw
-                    data_point_tuple = tuple(map(float, line_content))
-                    self._data.append(DataPoint(data_point_tuple))
-                    #self._data.append(tuple(map(float, line_content)))
-            self.dataChanged.emit()
-
-    @Slot()
-    def getData(self):
-        return self._data
-
-    data = Property(list, fget=getData, fset=loadData, notify=dataChanged)
-    
-class Airfoils(QAbstractListModel):
-    """This model contains the available airfoils, name and path"""
-    PathRole = Qt.UserRole + 1
-    NameRole = Qt.UserRole + 2
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._paths = list()
-        self._names = list()
-    
-    def rowCount(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        if role == Airfoils.PathRole:
-            return self._paths[index.row()]
-        elif role == Airfoils.NameRole:
-            return self._names[index.row()]
-        return None
-    
-    def roleNames(self) -> Dict:
-        roles = {Airfoils.PathRole: b"path", Airfoils.NameRole: b"name"}
-        return roles

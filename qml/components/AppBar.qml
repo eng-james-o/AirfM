@@ -33,7 +33,7 @@ Rectangle{
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            source: "../../images/airfoil.png"
+            source: "../../assets/airfoil.png"
 
             /*Image {
                 id: name
@@ -102,7 +102,7 @@ Rectangle{
 
         TopBarButton {
             id: closeButton
-            btnIconSource: "../../images/svg_images/close_icon.svg"
+            btnIconSource: "../../assets/svg_images/close_icon.svg"
             anchors.right: top_tool_bar.right
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40
@@ -115,7 +115,7 @@ Rectangle{
         }
         TopBarButton {
             id: maxButton
-            btnIconSource: "../../images/svg_images/maximize_icon.svg"
+            btnIconSource: "../../assets/svg_images/maximize_icon.svg"
             anchors.right: closeButton.left
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40
@@ -128,7 +128,7 @@ Rectangle{
         }
         TopBarButton {
             id: minButton
-            btnIconSource: "../../images/svg_images/minimize_icon.svg"
+            btnIconSource: "../../assets/svg_images/minimize_icon.svg"
             anchors.right: maxButton.left
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40

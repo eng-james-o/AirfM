@@ -1,39 +1,19 @@
 # This Python file uses the following encoding: utf-8
-import os
+
+import os, sys
 from pathlib import Path
-import sys
-#import numpy as np
+import logging
 
-from PySide6.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtQuick import QQuickView
-from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
-from PySide6.QtCharts import QtCharts
-from PySide6.QtWidgets import QApplication, QMainWindow 
+from PySide2.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
+from PySide2.QtGui import QGuiApplication
+from PySide2.QtQuick import QQuickView
+from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
+from PySide2.QtCharts import QtCharts
+from PySide2.QtWidgets import QApplication, QMainWindow 
 
-# import models.airfoils
-# import functions
-
-class DataPoint(QObject):
-    def __init__(self, xyz_tuple, parent=None):
-        super().__init__(parent)
-        self._x = xyz_tuple[0]
-        self._y = xyz_tuple[1]
-        if len(xyz_tuple) > 2:
-            self._z = xyz_tuple[2]
-
-    def getX(self):
-        return self._x
-
-    def getY(self):
-        return self._y
-    
-    def getZ(self):
-        return self._z
-
-    x = Property(float, getX)
-    y = Property(float, getY)
-    z = Property(float, getZ)
+from models.extras import DataPoint, AirfoilListModel
+from scripts.functions import get_foils_from_dir
+import globals
     
 class AirfoilModel(QObject):
     dataChanged = Signal()
@@ -106,7 +86,7 @@ if __name__ == "__main__":
     data_model = AirfoilModel()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("dataModel", data_model)
-    engine.load(os.fspath(Path(__file__).resolve().parent / "qml/main.qml"))
+    engine.load(globals.MAIN_QML_FILE)
 
     if not engine.rootObjects():
         sys.exit(-1)

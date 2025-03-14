@@ -43,7 +43,7 @@ Item {
                     // populate this model with a script that reads
                     // the contents of the directory and creates a model
                     text: "clark-y"
-                    path: "C:/Users/PC/Documents/Research and Projects/James-Mary AC design/airfoils/clarky.dat"
+                    path: "../../airfoils/naca02115.dat"
                 }
             }
             onCurrentValueChanged: {
