@@ -22,8 +22,6 @@ import os
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
 import logging
 
-from .extras import DataPoint
-
 class Airfoil_new(QObject):
     """
     Creates an airfoil object which can be rotated, moved, scaled. Base class for all airfoil types defined in the module
@@ -83,12 +81,14 @@ class Airfoil_new(QObject):
         self.LOADED = False 
         # becomes true if data is in the airfoil
         # and false if it is empty, either upon initialisatoin, or reset
-        # also remember the dataChanged signal which is emited when the load method is run
 
         if airfoil_path:
             # if path to airfoil data is given
             self.PATH = airfoil_path
             self.NAME, self.NUM_POINTS, self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.load(self.PATH)
+
+            self.initialise_foil(plane=plane, incidence=incidence, chord=chord, position=position, TE_treatment=TE_treatment)
+            
         if not self.NAME and not airfoil_name:
             # no name has been supplied
             logging.error("No name has been supplied")
@@ -98,31 +98,33 @@ class Airfoil_new(QObject):
         # self.UPPER_X, self.UPPER_Y = self.UPPER
         # self.LOWER_X, self.LOWER_Y = self.LOWER
 
+    def initialise_foil(self, plane, incidence, chord, position, TE_treatment):
         # self.close_TE(blend = blend_trailing_edge)
 
         self.PLANE = plane
         self.INCIDENCE = 0
-
+        
         # center foil, then scale, then rotate, then translate
         # center the airfoil quarter_chord
-        if self.LOADED:
-            # move this functionality to a separate function thqt is called here, and is also called if the airfoil is initialised empty and loaded later
-            self.center_foil()
+        # move this functionality to a separate function thqt is called here, and is also called if the airfoil is initialised empty and loaded later
+        
+        # if self.LOADED:
+        self.center_foil()
 
             # but if chord is given scale the foil to the given chord. 
-            if chord:
-                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
+        if chord:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
 
             # rotate airfoil
-            if incidence:
-                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
+        if incidence:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
 
             # translate foil to desired position
-            if position:
-                self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
+        if position:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
             
-            # self.X, self.Y = self.order_points()
-            # self.Z = np.zeros_like(self.X)
+        # self.X, self.Y = self.order_points()
+        # self.Z = np.zeros_like(self.X)
 
     def calculate_quarter_chord(self):
         """
@@ -226,6 +228,9 @@ class Airfoil_new(QObject):
         y_lower (np.ndarray): y-coordinates for the lower surface.
     """
         # Read and strip file lines; ignore completely blank lines.
+        if filename == "":
+            return
+
         with open(filename, 'r') as f:
             lines = f.readlines()
         lines = [line.strip() for line in lines if line.strip() != '']
@@ -309,7 +314,12 @@ class Airfoil_new(QObject):
         self.dataChanged.emit()
         
         return name, num_points, x_upper, y_upper, x_lower, y_lower
-
+    
+    @Slot()    
+    def getData(self):
+        return self._data
+    
+    data = Property(list, fget=getData, fset=load, notify=dataChanged)
 
     def scale_to(self, chord):
         """

@@ -9,4 +9,4 @@ AIRFOILS_FOLDER = os.fspath(PROJECT_DIR / 'airfoils')
 
 # Relative path to the qml files
 MAIN_QML_FILE = os.path.join(PROJECT_DIR / 'qml', 'main.qml')
-SPLASH_QML_FILE = os.path.join(PROJECT_DIR / 'splash', 'splash.qml')
+SPLASH_QML_FILE = os.path.join(PROJECT_DIR / 'qml', 'splash.qml')

@@ -1,0 +1,34 @@
+version: 1
+disable_existing_loggers: False
+
+formatters: 
+  detailed: 
+    format: "%(asctime)s - %(levelname)s - %(name)s-20s: %(message)s"
+  simple:
+    format: "%(levelname)s: %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formtter: simple
+    stream: ext://sys.stdout
+  
+  file:
+    class: logging.RotatingFileHandler
+    level: INFO
+    formatter: detailed
+    filename: log.log
+    mode: "a"
+    maxBytes: 5120
+    backupCount: 1
+
+loggers:
+  airfm:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+root:
+  level: WARNING
+  handlers: [console, file]

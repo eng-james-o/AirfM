@@ -12,7 +12,7 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.10
 - PySide2
 - Qt Charts (included with PySide2)
 
@@ -23,10 +23,6 @@ Contributions are welcome! If you'd like to contribute to this project, mail me 
 ## License
 
 This project is licensed under the GPU-3.0 License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Special thanks to ...
 
 ## Coming Features
 

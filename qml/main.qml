@@ -159,8 +159,6 @@ Window {
 
         MouseArea {
             id: resizeApp
-            x: 1176
-            y: 697
             width: 25
             height: 25
             anchors.right: parent.right

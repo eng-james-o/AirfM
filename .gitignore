@@ -86,6 +86,9 @@ Thumbs.db
 # temporary python files
 __pycache__
 
+# logs
+*.log
+
 # undone files
 data/coord_seligFmt
 airfoils/airfoil_archive

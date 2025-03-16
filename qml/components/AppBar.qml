@@ -33,7 +33,7 @@ Rectangle{
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            source: "../../assets/airfoil.png"
+            source: "../../assets/svg_images/airfoil.svg"
 
             /*Image {
                 id: name
@@ -79,7 +79,7 @@ Rectangle{
                 easing.type: Easing.InOutQuint
             }
 
-            CustomButton {
+            TextButton {
                 id: file_btn
                 width: 80
                 height: 40
@@ -89,7 +89,7 @@ Rectangle{
                 anchors.leftMargin: 10
                 colorDefault: "#2d2d3b"
             }
-            CustomButton {
+            TextButton {
                 width: 80
                 height: 40
                 text: "Analyse"
@@ -100,7 +100,7 @@ Rectangle{
             }
         }
 
-        TopBarButton {
+        WindowButton {
             id: closeButton
             btnIconSource: "../../assets/svg_images/close_icon.svg"
             anchors.right: top_tool_bar.right
@@ -113,7 +113,7 @@ Rectangle{
             }
             onPressed: mainWindow.close()
         }
-        TopBarButton {
+        WindowButton {
             id: maxButton
             btnIconSource: "../../assets/svg_images/maximize_icon.svg"
             anchors.right: closeButton.left
@@ -126,7 +126,7 @@ Rectangle{
             }
             onClicked: internal.maximizeRestore()
         }
-        TopBarButton {
+        WindowButton {
             id: minButton
             btnIconSource: "../../assets/svg_images/minimize_icon.svg"
             anchors.right: maxButton.left

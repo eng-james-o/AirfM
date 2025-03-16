@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import QtCharts 2.15
+import QtQuick 2.12
+import QtQuick.Window 2.12
+import QtQuick.Controls 2.12
+import QtCharts 2.12
 import "../components"
 
 Item {
@@ -47,7 +47,7 @@ Item {
                 }
             }
             onCurrentValueChanged: {
-                dataModel.loadData(select_foil_combobox.currentValue)
+                dataModel.load(select_foil_combobox.currentValue)
                 //onCurrentIndexChanged: console.debug(cbItems.get(currentIndex).text + ", " + cbItems.get(currentIndex).color)
             }
         }
@@ -81,8 +81,8 @@ Item {
             anchors.margins: 10
         }
 
-        CustomButton {
-            // eliminate button by assigning its function to onCuurentItemCHanged of the combobox
+        TextButton {
+            // eliminate button by assigning its function to onCurrentItemCHanged of the combobox
             // and set the initial item of the combobox to empty, with the text "select foil"
             // add to python backend to do nothing if the function is called on an empty path, instead of crash on an error
             text: "Clear"
@@ -147,3 +147,9 @@ Item {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

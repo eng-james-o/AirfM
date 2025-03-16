@@ -9,6 +9,7 @@ Button{
     property color btnColorDefault: "#00000000"
     property color btnColorMouseOver: "#40265d"
     property color btnColorClicked: "#00a1f1"
+    property color btnColorOverlay: "#ffffff"
     property int btnRadius: 16
 
     QtObject{
@@ -20,7 +21,6 @@ Button{
                                    } else {
                                        btnTopBar.hovered ? btnColorMouseOver : btnColorDefault
                                    }
-
     }
 
     width: 35
@@ -34,6 +34,7 @@ Button{
         anchors.margins: 3
 
         Image {
+            // icon on the button
             id: iconBtn
             source: btnIconSource
             anchors.verticalCenter: parent.verticalCenter
@@ -48,7 +49,7 @@ Button{
         ColorOverlay{
             anchors.fill: iconBtn
             source: iconBtn
-            color: "#ffffff"
+            color: btnColorOverlay
             antialiasing: false
         }
     }

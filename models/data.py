@@ -23,34 +23,7 @@ import sys
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
 
 # Qt Model classes
-class DataPoint(QObject):
-    def __init__(self, data_tuple, parent=None):
-        """
-        
-        """
-        super().__init__(parent)
-        self._x = data_tuple[0]
-        self._y = data_tuple[1]
-        
-        if len(data_tuple) > 2:
-            self._z = data_tuple[2]
 
-    def getX(self):
-        return self._x
-
-    def getY(self):
-        return self._y
-    
-    def getZ(self):
-        try:
-            return self._z
-        except:
-            return None
-
-    x = Property(float, getX)
-    y = Property(float, getY)
-    z = Property(float, getZ)
-       
 class AirfoilListModel(QAbstractListModel):
     """This model contains the available airfoils, name and path"""
     PathRole = Qt.UserRole + 1

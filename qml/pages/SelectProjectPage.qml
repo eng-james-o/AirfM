@@ -1,11 +1,14 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
+import "../components"
 
 Item {
     id: selectProjectPage
-    width: parent.width
-    height: parent.height
+    height: 625
+    width: 880
+    //width: parent.width
+    //height: parent.height
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -18,12 +21,20 @@ Item {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        Button {
-            text: "Create New Project"
+        TextButton {
+            text: "New"
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
                 // Logic to create a new project
                 console.log("Create New Project clicked")
+            }
+        }
+        TextButton {
+            text: "Open"
+            Layout.alignment: Qt.AlignHCenter
+            onClicked: {
+                // Logic to create a new project
+                console.log("Open Project clicked")
             }
         }
 
@@ -35,7 +46,6 @@ Item {
                 ListElement { name: "Project 1" }
                 ListElement { name: "Project 2" }
                 ListElement { name: "Project 3" }
-                // Add more projects as needed
             }
 
             delegate: Item {
@@ -67,3 +77,4 @@ Item {
         }
     }
 }
+
