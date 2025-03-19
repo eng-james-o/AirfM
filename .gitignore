@@ -92,3 +92,6 @@ __pycache__
 # undone files
 data/coord_seligFmt
 airfoils/airfoil_archive
+
+# experiments
+*.ipynb

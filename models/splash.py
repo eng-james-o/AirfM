@@ -8,12 +8,14 @@ import logging
 import time
 
 from scripts.functions import get_foils_from_dir
-from globals import AIRFOILS_FOLDER, MAIN_QML_FILE
+from globals import AIRFOILS_FOLDER
+from models.data import AirfoilListModel
 
 # set up logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='log.log', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8', level=logging.INFO)
 
+airfoil_listmodel = AirfoilListModel()
 
 class LoaderThread(QThread):
     loadingProgress = Signal(int, str)
@@ -27,20 +29,23 @@ class LoaderThread(QThread):
 
         # step 2: read airfoils
         airfoils = get_foils_from_dir(AIRFOILS_FOLDER)
-        step = f"Read airfoils from {AIRFOILS_FOLDER} folder"
-        self.process_step(1, step)
+        logger.info(f"{len(airfoils)} airfoils")
+        for filename, filepath in airfoils:
+            airfoil_listmodel.addItem(filename, filepath)
+            step = f"Load {filename} airfoil"
+            self.process_step(1, step)
 
         # step 3: load main qml
         step = "Load main QML"
         self.process_step(1, step)
-        time.sleep(0.5)
+        time.sleep(0.5) # small delay to ensure that the progressbar reaches the end before the splash screen closes
         self.completed = True
 
         self.loadingComplete.emit()
     
     def process_step(self, level:int, step:str):
         self.step_number += 1
-        time.sleep(0.5)
+        time.sleep(0.01) # small delay to ensure that the UI has time to update before the next value is sent
         logger.log(level=level, msg=step)
         self.loadingProgress.emit(self.step_number, step)
 

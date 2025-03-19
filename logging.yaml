@@ -11,18 +11,16 @@ handlers:
   console:
     class: logging.StreamHandler
     level: INFO
-    formtter: simple
+    formatter: simple
     stream: ext://sys.stdout
   
   file:
-    class: logging.RotatingFileHandler
+    class: logging.FileHandler
     level: INFO
     formatter: detailed
     filename: log.log
     mode: "a"
-    maxBytes: 5120
-    backupCount: 1
-
+    
 loggers:
   airfm:
     level: INFO

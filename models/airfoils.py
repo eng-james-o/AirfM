@@ -20,7 +20,9 @@ import os
 # import sys
 
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, Signal, Slot
-import logging
+from logger_config import logger
+
+## remember to update the _data attribute in the emethods that modify the airfoil data, such as initialise_foil(). since the _data attribute is what is being exposed to QML and not the 4 data arrays 
 
 class Airfoil_new(QObject):
     """
@@ -84,115 +86,15 @@ class Airfoil_new(QObject):
 
         if airfoil_path:
             # if path to airfoil data is given
-            self.PATH = airfoil_path
-            self.NAME, self.NUM_POINTS, self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.load(self.PATH)
-
-            self.initialise_foil(plane=plane, incidence=incidence, chord=chord, position=position, TE_treatment=TE_treatment)
+            self.PATH = airfoil_path # save the path
+            self.load(self.PATH) # load the airfoil data
             
-        if not self.NAME and not airfoil_name:
-            # no name has been supplied
-            logging.error("No name has been supplied")
-            # check if the name supplied is similar with the name in the airfoil file, if not, raise a warning
-            # if no name is supplied here and in the file, raise an error, demanding for a name
-        
-        # self.UPPER_X, self.UPPER_Y = self.UPPER
-        # self.LOWER_X, self.LOWER_Y = self.LOWER
-
-    def initialise_foil(self, plane, incidence, chord, position, TE_treatment):
-        # self.close_TE(blend = blend_trailing_edge)
-
-        self.PLANE = plane
-        self.INCIDENCE = 0
-        
-        # center foil, then scale, then rotate, then translate
-        # center the airfoil quarter_chord
-        # move this functionality to a separate function thqt is called here, and is also called if the airfoil is initialised empty and loaded later
-        
-        # if self.LOADED:
-        self.center_foil()
-
-            # but if chord is given scale the foil to the given chord. 
-        if chord:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
-
-            # rotate airfoil
-        if incidence:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
-
-            # translate foil to desired position
-        if position:
-            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
-            
-        # self.X, self.Y = self.order_points()
-        # self.Z = np.zeros_like(self.X)
-
-    def calculate_quarter_chord(self):
-        """
-        Calcualtes the position of the quarter chord of the airfoil and sets the self.QUARTER_CHORD parameter
-
-        Returns:
-            tuple: x, y
-        """
-        # self.QUARTER_CHORD =  (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
-        return (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
+            if not self.NAME and not airfoil_name:
+                # no name has been supplied
+                logger.error("No name has been supplied")
     
-    def calculate_chord(self):
-        """
-        Calculates the length of the chord of the airfoil
-
-        Returns:
-            float: chord
-        """
-        return np.sqrt((self.UPPER_X[-1] - self.UPPER_X[0])**2 + (self.UPPER_Y[-1] - self.UPPER_Y[0])**2)
-    
-    def count_points(self):
-        """
-        count the number of points for the upper curve and lower curves. This method is necessary if the airfoil_data is given instead of the path
-        
-        Args:
-        Returns:
-            tuple: num_upper, num_lower
-        """
-        pass
-
-    def center_foil(self):
-        '''centers the coordinates of the foil to make the quarter chord lie at (0,0)'''
-        
-        self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(0,0)
-
-    def order_points(self):
-        """
-        Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface.
-
-        Returns: 
-            tuple: X, Y - X coordinates and Y coordinates of the foil from LE to TE and back to LE
-        """
-        # check if the data is in the correct order.
-        # CORRECT ORDER: x values of upper curve goes from small to high and lower curve from high to small
-        if (self.UPPER_X[0] < self.UPPER_X[-1]) and (self.LOWER_X[0] < self.LOWER_X[-1]):
-            # Upper curve goes from small to high but lower cuve also goes from low to high. lower curve needs to reverse
-            self.LOWER_X = np.flipud(self.LOWER_X)
-            self.LOWER_Y = np.flipud(self.LOWER_Y)
-            print('Lower curve reversed')
-        
-        # implement code to remove duplicate TE point
-        # if last point of upper curve == first point of lower curve, remove the TE point
-        # first point in lower curve
-        if (self.UPPER_X[-1] == self.LOWER_X[0]) and (self.UPPER_Y[-1] == self.LOWER_Y[0]):
-            lower_x = self.LOWER_X[1:]
-            lower_y = self.LOWER_Y[1:]
-        else:
-            lower_x = self.LOWER_X[:]
-            lower_y = self.LOWER_Y[:]
-
-        # concatenate X and Y coordinates
-        X = np.concatenate((self.UPPER_X, lower_x))
-        Y = np.concatenate((self.UPPER_Y, lower_y))
-
-        return X, Y
-
     @Slot(str)
-    def load(self, filename:str):
+    def load(self, filename:str, plane=None, incidence=None, chord=None, position=None, TE_treatment=None):
         """
     Reads a Selig-format airfoil file and returns the airfoil name,
     the total number of points, and four NumPy arrays:
@@ -311,19 +213,121 @@ class Airfoil_new(QObject):
         # Add data into the class instance parameters
         self.NAME = name
         self.NUM_POINTS = num_points
-        self.dataChanged.emit()
+        # self.dataChanged.emit() # this should already be emited by the self._data property definition
         
-        return name, num_points, x_upper, y_upper, x_lower, y_lower
+        x = np.hstack((x_lower, x_upper[::-1]))
+        y = np.hstack((y_lower, y_upper[::-1]))
+        # you have not removed the duplicate point that will exist at the leading and trailing points
+        self._data = np.vstack((x, y)).T
+
+        if plane or incidence or chord or position or TE_treatment:
+            self.initialise_foil(plane=plane, incidence=incidence, chord=chord, position=position, TE_treatment=TE_treatment)
+
+        # return name, num_points, x_upper, y_upper, x_lower, y_lower
     
+    def initialise_foil(self, plane, incidence, chord, position, TE_treatment):
+        # self.close_TE(blend = blend_trailing_edge)
+
+        self.PLANE = plane
+        self.INCIDENCE = 0
+        
+        # center foil, then scale, then rotate, then translate
+        # center the airfoil quarter_chord
+        # move this functionality to a separate function thqt is called here, and is also called if the airfoil is initialised empty and loaded later
+        
+        # if self.LOADED:
+        self.center_foil()
+
+            # but if chord is given scale the foil to the given chord. 
+        if chord:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.scale_to(chord)
+
+            # rotate airfoil
+        if incidence:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.rotate_to(incidence)
+
+            # translate foil to desired position
+        if position:
+            self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
+            
+        # self.X, self.Y = self.order_points()
+        # self.Z = np.zeros_like(self.X)
+
+    def calculate_quarter_chord(self):
+        """
+        Calcualtes the position of the quarter chord of the airfoil and sets the self.QUARTER_CHORD parameter
+
+        Returns:
+            tuple: x, y
+        """
+        # self.QUARTER_CHORD =  (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
+        return (((self.UPPER_X[-1] - self.UPPER_X[0])/4)+self.UPPER_X[0], ((self.UPPER_Y[-1] - self.UPPER_Y[0])/4)+self.UPPER_Y[0])
+    
+    def calculate_chord(self):
+        """
+        Calculates the length of the chord of the airfoil
+
+        Returns:
+            float: chord
+        """
+        return np.sqrt((self.UPPER_X[-1] - self.UPPER_X[0])**2 + (self.UPPER_Y[-1] - self.UPPER_Y[0])**2)
+    
+    def count_points(self):
+        """
+        count the number of points for the upper curve and lower curves. This method is necessary if the airfoil_data is given instead of the path
+        
+        Args:
+        Returns:
+            tuple: num_upper, num_lower
+        """
+        pass
+
+    def center_foil(self):
+        '''centers the coordinates of the foil to make the quarter chord lie at (0,0)'''
+        
+        self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(0,0)
+
+    def order_points(self):
+        """
+        Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface.
+
+        Returns: 
+            tuple: X, Y - X coordinates and Y coordinates of the foil from LE to TE and back to LE
+        """
+        # check if the data is in the correct order.
+        # CORRECT ORDER: x values of upper curve goes from small to high and lower curve from high to small
+        if (self.UPPER_X[0] < self.UPPER_X[-1]) and (self.LOWER_X[0] < self.LOWER_X[-1]):
+            # Upper curve goes from small to high but lower cuve also goes from low to high. lower curve needs to reverse
+            self.LOWER_X = np.flipud(self.LOWER_X)
+            self.LOWER_Y = np.flipud(self.LOWER_Y)
+            print('Lower curve reversed')
+        
+        # implement code to remove duplicate TE point
+        # if last point of upper curve == first point of lower curve, remove the TE point
+        # first point in lower curve
+        if (self.UPPER_X[-1] == self.LOWER_X[0]) and (self.UPPER_Y[-1] == self.LOWER_Y[0]):
+            lower_x = self.LOWER_X[1:]
+            lower_y = self.LOWER_Y[1:]
+        else:
+            lower_x = self.LOWER_X[:]
+            lower_y = self.LOWER_Y[:]
+
+        # concatenate X and Y coordinates
+        X = np.concatenate((self.UPPER_X, lower_x))
+        Y = np.concatenate((self.UPPER_Y, lower_y))
+
+        return X, Y
+
     @Slot()    
     def getData(self):
+        # fix this, since self._data does not exist yet
         return self._data
     
     data = Property(list, fget=getData, fset=load, notify=dataChanged)
 
-    def scale_to(self, chord):
+    def scale_to(self, chord:float)->tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
-        Scales the airfoil to the given chord.
+        Scales the airfoil to the given chord and returns upper_x, upper_y, lower_x, lower_y to be assigned back into the Instance attributes
         Args:
             chord: the desired chord of the airfoil
         
@@ -353,7 +357,7 @@ class Airfoil_new(QObject):
             y_position (float): desired y position of the foil
 
         Returns:
-            tuple
+            Tuple (tuple): upper_x, upper_y, lower_x, lower_y
         """
         # calculate the distance between the quarter chord and the desired position
         quarter_chord_x, quarter_chord_y = self.calculate_quarter_chord()
@@ -608,7 +612,6 @@ class Airfoil_new(QObject):
         return upper_x, upper_y, lower_x, lower_y
 
 
-
 class Airfoil:
     """
     Creates an airfoil object which can be rotated, moved, scaled. Base class for all airfoil types defined in the module
@@ -780,7 +783,7 @@ class Airfoil:
             with open(airfoil_path) as airfoil_dat:
                 contents = airfoil_dat.readlines()
         except Exception as e:
-            print(f"Error -> {e}")
+            logger.warn(f"Error -> {e}")
         else:
             for line in contents:
                 line_content = line.strip().split() # strip whitespaces and split the line by spaces

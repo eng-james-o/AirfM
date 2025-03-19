@@ -6,10 +6,12 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 import re
 
-# from ..globals import AIRFOIL_PATH
-
-def get_foils_from_dir(data_path):
-    files = [f for f in os.listdir(data_path) if os.path.isfile(f)]
+def get_foils_from_dir(data_path:str)-> list:
+    """
+    Checks through the data_path directory and returns a list of tuples of (filename, path) for each file that is present in the directory
+    """
+    # implement check to know if f is a file or directory, since including a directory will likely raise errors
+    files = [(f, os.path.join(data_path, f)) for f in os.listdir(data_path)]# if os.path.isfile(f)]
     return files
 
 def get_save_airfoils():
@@ -39,6 +41,6 @@ def get_save_airfoils():
 
 
 if __name__ == "__main__":
-    airfoils = get_foils_from_dir()
+    airfoils = get_foils_from_dir(r"C:\Users\james\Documents\GitHub\AirfM\airfoils\airfoil_archive")
     print(airfoils)
 

@@ -14,7 +14,7 @@ Window {
 
     // Remove title bar
     flags: Qt.SplashScreen | Qt.FramelessWindowHint
-    modality: Qt.ApplicationModal
+    // modality: Qt.ApplicationModal
 
     WindowButton {
         id: closeButton
@@ -68,6 +68,8 @@ Window {
         padding: 1
         anchors.horizontalCenter: parent.horizontalCenter
         value: 0
+        from: 0; to: 1542
+
         Behavior on value {
             NumberAnimation {
                 duration: 500
@@ -98,17 +100,21 @@ Window {
     Label {
         id: staticText
         text: qsTr("Progress:")
-        anchors.bottomMargin: 5
+        anchors.bottomMargin: 15
+        font.pointSize: 7
         anchors.left: progressBar.left
         anchors.bottom: progressBar.top
     }
     Label {
         id: progressbarText
         text: qsTr("")
+        font.pointSize: 7
+        width: 545
         anchors.left: staticText.right
         anchors.leftMargin: 5
         anchors.bottom: progressBar.top
-        anchors.bottomMargin: 5
+        anchors.bottomMargin: 15
+        wrapMode: Text.WrapAnywhere
     }
 
     signal reLoadingProgress (int number, string step)
@@ -120,10 +126,10 @@ Window {
 
     Connections {
         target: splashScreen
-        onReLoadingProgress: {
-            progressBar.value = number/3
-            progressbarText.text = step
+        function onReLoadingProgress (number, text) {
+            progressBar.value = number
+            progressbarText.text = text
             // console.log(progressBar.value, step)
-            }
+        }
     }
 }
