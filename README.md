@@ -11,13 +11,15 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 - **Interactive Plotting**: Visualize airfoil data using interactive plots that allow for zooming, panning, and dynamic updates.
 - **Customizable Plot Settings**: Adjust plot settings such as axis labels, tick marks, and plot style to suit your preferences.
 - **User-Friendly Interface**: Intuitive user interface designed for ease of use and navigation.
+- **Extensive list of airfoils**: A list of airfoils listed in the UIUC airfoil database, available at [UIUC Database](https://m-selig.ae.illinois.edu/ads/coord_database.html)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.10
-- PySide2
+- Python: 3.5 - 3.11 (Ensure you are using a compatible version)
+- Qt: 5.15.11 - 5.15.15 (Required by PySide2)
+- PySide2: Compatible with Qt 5.15.11 - 5.15.15
 - Qt Charts (included with PySide2)
 
 ## Contributing
@@ -30,4 +32,6 @@ This project is licensed under the GPU-3.0 License - see the [LICENSE](LICENSE) 
 
 ## Coming Features
 
+- **Airfoil analysis**: Use numerical solvers to perform preliminary analysis on airfoils.
 - **Multiple Airfoil Support**: Load data for multiple airfoils and compare their performance side by side.
+- **Export Objects to CAD**: Provide support to export wings to CAD software rather than only 2D airfoils.
