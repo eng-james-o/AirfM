@@ -33,8 +33,7 @@ Item {
             
             onCurrentValueChanged: {
                 dataModel.load(select_foil_combobox.currentValue)
-                // console.log(select_foil_combobox.currentValue)
-                //onCurrentIndexChanged: console.debug(cbItems.get(currentIndex).text + ", " + cbItems.get(currentIndex).color)
+                console.log(select_foil_combobox.currentValue)
             }
         }
         ManipulationSpinBox {
@@ -101,8 +100,7 @@ Item {
 
             var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
             for (var i = 0; i < dataModel.data.length; ++i) {
-                // series.append(dataModel.data[i].x, dataModel.data[i].y);
-                //console.log(i);
+                console.log(i);
                 //console.log(dataModel.data[i][0], dataModel.data[i][1]);
                 series.append(dataModel.data[i][0], dataModel.data[i][1]);
             }

@@ -10,6 +10,8 @@ ComboBox {
     model: airfoilListModel
     textRole: "name"
     valueRole: "path"
+    implicitWidth: 120
+    implicitHeight: 40
 
     //    onCurrentTextChanged: {console.log("CustomComboBox: ", control.model.name)}
 
@@ -68,8 +70,8 @@ ComboBox {
     }
 
     background: Rectangle {
-        implicitWidth: 120
-        implicitHeight: 40
+        implicitWidth: control.width //120
+        implicitHeight: control.height // 40
         border.color: control.pressed ? "#17a81a" : "#21be2b"
         border.width: control.visualFocus ? 2 : 1
         radius: 5

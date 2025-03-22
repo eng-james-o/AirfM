@@ -9,7 +9,7 @@ import time
 
 from scripts.functions import get_foils_from_dir
 from globals import AIRFOILS_FOLDER
-from models.data import AirfoilListModel
+from models.data import AirfoilListModel, ProjectListModel
 
 # set up logger
 logger = logging.getLogger(__name__)
@@ -70,3 +70,12 @@ class SplashController(QObject):
     
     def finish_loading(self):
         self.loadingComplete.emit()
+
+class ProjectController(QObject):
+    def __init__(self, parent=None):
+        super(ProjectController).__init__(parent)
+    
+    @Slot()
+    def add_project(self):
+        pass
+    

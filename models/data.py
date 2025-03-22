@@ -64,3 +64,24 @@ class ModelItem:
     def __init__(self, name, path):
         self.name = name
         self.path = path
+
+def createModelItem(name, variables):
+    '''A function that creates classes for the ModelItem for airfoils and for projects and for any other list list model needed in this project
+    
+    it takes the name of the model, and the names of the variables'''
+    return type()
+
+class ProjectListModel(QAbstractListModel):
+    PathRole = Qt.UserRole + 1
+    NameRole = Qt.UserRole + 2
+    DateRole = Qt.UserRole + 3
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._data = list()
+    
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid() or not (0 <= index.row() < len(self._data)):
+            return None
+        
+        item = self._data[index.row()]

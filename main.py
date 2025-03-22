@@ -12,7 +12,7 @@ from models.data import AirfoilListModel
 from models.airfoils import Airfoil_new
 from scripts.functions import get_foils_from_dir
 import globals
-from models.splash import SplashController, airfoil_listmodel
+from models.controllers import SplashController, airfoil_listmodel
 
 from logger_config import logger
     

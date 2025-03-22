@@ -2,6 +2,10 @@
 
 Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to help users visualize UIUC airfoil data in a user-friendly and interactive way. This app provides a convenient way to visualise an airfoil and prepare them to be used as curves in Solidworks and/or other modeling software.
 
+![Splash screen](screenshots/splash_screen.png)
+
+![Main screen](screenshots/main_screen.png)
+
 ## Features
 
 - **Interactive Plotting**: Visualize airfoil data using interactive plots that allow for zooming, panning, and dynamic updates.

@@ -11,57 +11,136 @@ Item {
     //height: parent.height
 
     ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 20
+        id: sideLayout
 
-        Text {
-            text: "Select or Create Project"
-            font.pixelSize: 24
-            horizontalAlignment: Text.AlignHCenter
-            Layout.alignment: Qt.AlignHCenter
-        }
+        //        anchors.bottom: parent.bottom
+        //        anchors.bottomMargin: 50
+        anchors.leftMargin: 30
+        anchors.top: parent.top
+        anchors.topMargin: 115
+        anchors.left: parent.left
+        anchors.right: mainLayout.left
 
         TextButton {
-            text: "New"
+            text: "Airfoil Library"
+            Layout.preferredWidth: 100
+            Layout.preferredHeight: 45
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
-                // Logic to create a new project
-                console.log("Create New Project clicked")
+                // Logic to show airfoil library
+                console.log("Show airfoil library")
             }
         }
         TextButton {
-            text: "Open"
+            text: "Help"
+            Layout.preferredWidth: 100
+            Layout.preferredHeight: 45
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
-                // Logic to create a new project
-                console.log("Open Project clicked")
+                // Logic to show help
+                console.log("Show help")
+            }
+        }
+    }
+
+    ColumnLayout {
+        id: mainLayout
+        width: 640
+        anchors.right: parent.right
+        anchors.rightMargin: 50
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 50
+        anchors.top: parent.top
+        anchors.topMargin: 50
+        spacing: 20
+
+        RowLayout {
+            spacing: 50
+
+            Label {
+                Layout.preferredWidth: 100
+                text: "Projects"
+                font.pixelSize: 24
+                horizontalAlignment: Text.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            TextButton {
+                text: "New"
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 45
+                Layout.alignment: Qt.AlignHCenter
+                onClicked: {
+                    // Logic to create a new project
+                    console.log("Create New Project clicked")
+                }
+            }
+            TextButton {
+                text: "Open"
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 45
+                Layout.alignment: Qt.AlignHCenter
+                onClicked: {
+                    // Logic to open an existing project
+                    console.log("Open Project clicked")
+                }
             }
         }
 
         ListView {
             id: recentProjectsList
-            width: parent.width * 0.8
-            height: parent.height * 0.5
+            height: 450
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            clip: true
+            Rectangle {
+                id: listviewBg
+                color: "#00000000"
+                radius: 5
+                z: -1
+                border.color: "#707070"
+                border.width: 2
+                anchors.fill: parent
+            }
+
             model: ListModel {
-                ListElement { name: "Project 1" }
-                ListElement { name: "Project 2" }
-                ListElement { name: "Project 3" }
+                ListElement { name: "Project 1"; location:"C:/Users"; date:"12-16-25" }
+                ListElement { name: "Project 2"; location:"C:/Users"; date:"12-16-25" }
+                ListElement { name: "Project 3"; location:"C:/Users"; date:"12-16-25" }
             }
 
             delegate: Item {
+                id: element
                 width: parent.width
-                height: 50
+                height: 40
 
                 Rectangle {
-                    width: parent.width
-                    height: parent.height
+                    id: rectangle
+                    width: parent.width - 20
+                    height: parent.height - 4
                     color: "#f0f0f0"
                     border.color: "#cccccc"
                     radius: 5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
 
                     Text {
-                        anchors.centerIn: parent
+                        anchors.left: parent.left
                         text: model.name
+                        anchors.leftMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.pixelSize: 18
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: model.location
+                        font.pixelSize: 18
+                    }
+                    Text {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: model.date
+                        anchors.rightMargin: 10
                         font.pixelSize: 18
                     }
 

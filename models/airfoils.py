@@ -323,7 +323,7 @@ class Airfoil_new(QObject):
         # fix this, since self._data does not exist yet
         return self._data
     
-    data = Property(list, fget=getData, fset=load, notify=dataChanged)
+    data = Property(np.ndarray, fget=getData, notify=dataChanged)
 
     def scale_to(self, chord:float)->tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
