@@ -2,7 +2,13 @@
 This module contains various model classes that are not directly based on airfoil shapes.
 
 Classes:
-    Airfoils: A Qt ListModel that contains the names and paths of all the available airfoils in the database
+    AirfoilListModel: A Qt ListModel that contains the names and paths of all the available airfoils in the database
+    AirfoilModelItem: 
+    ProjectListModel: A Qt ListModel that contains the names
+    ProjectModelItem: 
+
+Functions:
+    createModelItem: A class factory
 """
 # This Python file uses the following encoding: utf-8
 
@@ -56,24 +62,41 @@ class AirfoilListModel(QAbstractListModel):
     @Slot(str, str)
     def addItem(self, name, path):
         self.beginInsertRows(QModelIndex(), len(self._data), len(self._data))
-        self._data.append(ModelItem(name, path))
+        self._data.append(AirfoilModelItem(name, path))
         self.endInsertRows()
 
-class ModelItem:
-    """This class represents a single entry of airfoil name and path"""
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-
-def createModelItem(name, variables):
-    '''A function that creates classes for the ModelItem for airfoils and for projects and for any other list list model needed in this project
+def createModelItem(name, required_attrs):
+    """
+    This class factory creates a class with the given name and required attributes. It creates classes for the ModelItem for airfoils and for any other list list model needed in this project.
+    # Example usage
+    AirfoilModelItem = createModelItem("AirfoilModelItem", ["name", "path"])
     
-    it takes the name of the model, and the names of the variables'''
-    return type()
+    Args:
+        name (str): The name of the class
+        required_attrs (list): A list of required attributes
+    Returns:
+        type: A class with the given name and required attributes
+    """
+    def __init__(self, *args):
+        if len(args) != len(required_attrs):
+            raise TypeError(f"{name} requires {len(required_attrs)} arguments: {', '.join(required_attrs)}")
+        for attr, value in zip(required_attrs, args):
+            setattr(self, attr, value)
+    
+    return type(name, (object,), {"__init__": __init__})
 
+AirfoilModelItem = createModelItem("AirfoilModelItem", ["name", "path"])
+AirfoilModelItem.__doc__ = """
+This class represents a single entry of airfoil name and path. 
+
+Args:
+    name (str): The name of the airfoil
+    path (str): The path to the airfoil
+"""
+                                   
 class ProjectListModel(QAbstractListModel):
-    PathRole = Qt.UserRole + 1
-    NameRole = Qt.UserRole + 2
+    NameRole = Qt.UserRole + 1
+    PathRole = Qt.UserRole + 2
     DateRole = Qt.UserRole + 3
 
     def __init__(self, parent=None):
@@ -85,3 +108,13 @@ class ProjectListModel(QAbstractListModel):
             return None
         
         item = self._data[index.row()]
+
+ProjectModelItem = createModelItem("ProjectModelItem", ["name", "path", "date"])
+ProjectModelItem.__doc__ = """
+This class represents a single entry of project name path and date. 
+
+Args:
+    name (str): The name of the project
+    path (str): The path to the project
+    date (str): The date the project was last modified
+"""
