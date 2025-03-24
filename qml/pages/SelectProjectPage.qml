@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
+import QtQuick.Dialogs 1.2
 import "../components"
 
 Item {
@@ -15,11 +16,13 @@ Item {
 
         //        anchors.bottom: parent.bottom
         //        anchors.bottomMargin: 50
-        anchors.leftMargin: 30
-        anchors.top: parent.top
-        anchors.topMargin: 115
-        anchors.left: parent.left
-        anchors.right: mainLayout.left
+        anchors {
+            left: parent.left
+            leftMargin: 30
+            top: parent.top
+            right: mainLayout.left
+            topMargin: 115
+        }
 
         TextButton {
             text: "Airfoil Library"
@@ -73,6 +76,7 @@ Item {
                 onClicked: {
                     // Logic to create a new project
                     console.log("Create New Project clicked")
+                    newProjectDialog.open()
                 }
             }
             TextButton {
@@ -83,6 +87,8 @@ Item {
                 onClicked: {
                     // Logic to open an existing project
                     console.log("Open Project clicked")
+                    openProjectDialog.open()
+                    // projectController.open(openProjectDialog.fileUrl)
                 }
             }
         }
@@ -153,6 +159,25 @@ Item {
                     }
                 }
             }
+        }
+    }
+    FileDialog {
+        id: openProjectDialog
+        title: qsTr("Open Project")
+        nameFilters: [ "Airfm project files (*.afm)", "Selig airfoils (*.dat)" ]
+        folder: shortcuts.Documents
+        onSelectionAccepted: {
+            //openProjectDialog.file
+        }
+    }
+    Dialog {
+        id: newProjectDialog
+        title: qsTr("New Project")
+        // guide the user through creating the
+        // project with multipages
+        StackView {
+            id: stack
+            anchors.fill: parent
         }
     }
 }

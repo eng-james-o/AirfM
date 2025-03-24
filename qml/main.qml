@@ -182,7 +182,7 @@ Window {
             anchors.bottomMargin: 20
 
             currentIndex: 1
-            SelectFoilPage {
+            SelectFoilPage_new {
                 id: select_foil_page
             }
         }

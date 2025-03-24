@@ -73,9 +73,12 @@ class SplashController(QObject):
 
 class ProjectController(QObject):
     def __init__(self, parent=None):
-        super(ProjectController).__init__(parent)
+        super(ProjectController, self).__init__(parent)
     
     @Slot()
-    def add_project(self):
+    def new_project(self):
         pass
-    
+
+    @Slot(str)
+    def open_project(self):
+        pass

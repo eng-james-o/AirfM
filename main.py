@@ -12,7 +12,7 @@ from models.data import AirfoilListModel
 from models.airfoils import Airfoil_new
 from scripts.functions import get_foils_from_dir
 import globals
-from models.controllers import SplashController, airfoil_listmodel
+from models.controllers import SplashController, ProjectController, airfoil_listmodel
 
 from logger_config import logger
     
@@ -22,6 +22,7 @@ if __name__ == "__main__":
     root_context = engine.rootContext()
 
     splash_controller = SplashController()
+    project_controller = ProjectController()
     data_model = Airfoil_new()
 
     root_context.setContextProperty("splashController", splash_controller)
@@ -36,6 +37,7 @@ if __name__ == "__main__":
         engine.clearComponentCache()
         root_context.setContextProperty("dataModel", data_model)
         root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
+        root_context.setContextProperty("projectController", project_controller)
         try:
             engine.load(globals.MAIN_QML_FILE)
             splash_screen = engine.rootObjects()[0]

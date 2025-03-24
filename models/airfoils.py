@@ -513,7 +513,7 @@ class Airfoil_new(QObject):
 
         print(f'{self.NAME} saved as {format} file - {self.EXPORT_FILENAME}')
     
-    # Mangled internal methods
+    # internal methods
     
     def __rotate(self, x_upper, y_upper, x_lower, y_lower, angle):
         """

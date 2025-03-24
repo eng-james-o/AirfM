@@ -14,6 +14,7 @@ ComboBox {
     implicitHeight: 40
 
     //    onCurrentTextChanged: {console.log("CustomComboBox: ", control.model.name)}
+    //    onCurrentValueChanged: {console.log("CustomComboBox: ", control.model.name)}
 
     delegate: ItemDelegate {
         width: control.width

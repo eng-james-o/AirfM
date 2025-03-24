@@ -109,6 +109,31 @@ class ProjectListModel(QAbstractListModel):
         
         item = self._data[index.row()]
 
+        if role == ProjectListModel.PathRole:
+            return item.path
+        elif role == ProjectListModel.NameRole or role == Qt.DisplayRole:
+            return item.name
+        elif role == ProjectListModel.DateRole:
+            return item.date
+        return None
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self._data)
+    
+    def roleNames(self) -> Dict:
+        roles = {
+            ProjectListModel.PathRole: b"path",
+            ProjectListModel.NameRole: b"name",
+            ProjectListModel.DateRole: b"date"
+            }
+        return roles
+    
+    @Slot(str, str)
+    def addItem(self, name, path, date):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+        self._data.append(ProjectListModel(name, path, date))
+        self.endInsertRows()
+
 ProjectModelItem = createModelItem("ProjectModelItem", ["name", "path", "date"])
 ProjectModelItem.__doc__ = """
 This class represents a single entry of project name path and date. 

@@ -27,6 +27,10 @@ Button {
     }
 
     contentItem: Item{
+        //        width: button.width
+        //        height: button.height
+        anchors.fill: parent
+
         Text {
             id: name
             text: button.text
@@ -39,10 +43,11 @@ Button {
     background: Rectangle{
         id: bg
         color: internal.dynamicColor
-        width: button.width
-        height: button.height
+        anchors.fill: parent
+        //        width: button.width
+        //        height: button.height
         radius: 5
-        border.color: control.borderColor
+        border.color: button.borderColor
         border.width: 2
     }
 }
