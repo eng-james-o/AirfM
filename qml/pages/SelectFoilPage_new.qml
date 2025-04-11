@@ -61,32 +61,17 @@ Item {
             }
             TextButton {
                 id: openButton
-                Layout.preferredHeight: 30
-                Layout.preferredWidth: 80
-                Layout.fillWidth: true
+                implicitHeight: 40
+                implicitWidth: 60
                 text: qsTr("Open")
-                Layout.maximumHeight: 40
-                Layout.minimumHeight: 30
-                Layout.fillHeight: true
-                //                anchors.bottomMargin: 6
-                //                anchors.bottom: parent.bottom
-                //                anchors.left: select_foilCombobox.right
-                //                anchors.margins: content_page.spacing
                 colorDefault: "white"
             }
             TextButton {
                 id: duplicateButton
                 text: qsTr("Duplicate")
-                Layout.maximumHeight: 40
-                Layout.minimumHeight: 30
-                Layout.fillHeight: true
-                //                anchors.bottomMargin: 6
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: 30
-                Layout.fillWidth: true
-                //                anchors.bottom: parent.bottom
-                //                anchors.left: openButton.right
-                //                anchors.margins: content_page.spacing
+
+                implicitHeight: 40
+                implicitWidth: 80
                 colorDefault: "white"
             }
         }

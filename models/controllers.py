@@ -10,6 +10,8 @@ import time
 from scripts.functions import get_foils_from_dir
 from globals import AIRFOILS_FOLDER
 from models.data import AirfoilListModel, ProjectListModel
+import os
+from PySide2.QtWidgets import QFileDialog
 
 # set up logger
 logger = logging.getLogger(__name__)
@@ -77,8 +79,65 @@ class ProjectController(QObject):
     
     @Slot()
     def new_project(self):
-        pass
+        """
+        Creates a new project stored as a file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
+        """
+        
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_path, _ = QFileDialog.getSaveFileName(
+            None,
+            "Create New Project",
+            "",
+            "Airfoil Project Files (*.afm);;All Files (*)",
+            options=options
+        )
+
+        if file_path:
+            # Ensure the file has the correct extension
+            if not file_path.endswith(".afm"):
+                file_path += ".afm"
+
+            # Create an empty project file
+            try:
+                with open(file_path, 'w') as project_file:
+                    project_file.write("# Airfoil Project File\n")
+                    project_file.write("# This file stores airfoils, transformations, and derived airfoils\n")
+                logger.info(f"New project created at {file_path}")
+            except Exception as e:
+                logger.error(f"Failed to create project file: {e}")
 
     @Slot(str)
     def open_project(self):
+        """
+        Opens an existing project file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_path, _ = QFileDialog.getOpenFileName(
+            None,
+            "Open Project",
+            "",
+            "Airfoil Project Files (*.afm);;All Files (*)",
+            options=options
+        )
+
+        if file_path:
+            # Load the project file
+            try:
+                with open(file_path, 'r') as project_file:
+                    content = project_file.read()
+                logger.info(f"Project opened from {file_path}")
+            except Exception as e:
+                logger.error(f"Failed to open project file: {e}")
+
+class MainController(QObject):
+    def __init__(self, parent = ...):
+        super(MainController, self).__init__(parent)
+    
+    def save(self):
+        """
+        Save the project progress into the .afm file
+        """
+        # Implement the save logic here
         pass

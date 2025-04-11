@@ -217,7 +217,6 @@ class Airfoil_new(QObject):
         
         x = np.hstack((x_lower, x_upper[::-1]))
         y = np.hstack((y_lower, y_upper[::-1]))
-        # you have not removed the duplicate point that will exist at the leading and trailing points
         self._data = np.vstack((x, y)).T
 
         if plane or incidence or chord or position or TE_treatment:

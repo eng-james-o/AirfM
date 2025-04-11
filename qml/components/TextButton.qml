@@ -13,7 +13,9 @@ Button {
     property color borderColor: textColor
 
     text: qsTr("Button")
+    width: 50
     implicitWidth: 50
+    height: 25
     implicitHeight: 25
 
     QtObject{
@@ -27,8 +29,6 @@ Button {
     }
 
     contentItem: Item{
-        //        width: button.width
-        //        height: button.height
         anchors.fill: parent
 
         Text {
@@ -44,15 +44,9 @@ Button {
         id: bg
         color: internal.dynamicColor
         anchors.fill: parent
-        //        width: button.width
-        //        height: button.height
         radius: 5
         border.color: button.borderColor
         border.width: 2
     }
 }
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:40;width:200}
-}
-##^##*/
+
