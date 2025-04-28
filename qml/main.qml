@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import QtCharts 2.15
+import QtQuick 2.12
+import QtQuick.Window 2.12
+import QtQuick.Controls 2.12
+//import QtCharts 2.12
 import "components"
 import "pages"
 
@@ -159,8 +159,6 @@ Window {
 
         MouseArea {
             id: resizeApp
-            x: 1176
-            y: 697
             width: 25
             height: 25
             anchors.right: parent.right
@@ -184,7 +182,7 @@ Window {
             anchors.bottomMargin: 20
 
             currentIndex: 1
-            SelectFoilPage {
+            SelectFoilPage_new {
                 id: select_foil_page
             }
         }
@@ -197,3 +195,9 @@ Window {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

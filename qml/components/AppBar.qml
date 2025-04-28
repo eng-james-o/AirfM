@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 2.12
+import QtQuick.Window 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 
 Rectangle{
     property int appBarRadius: 10
@@ -33,7 +33,7 @@ Rectangle{
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            source: "../../images/airfoil.png"
+            source: "../../assets/svg_images/airfoil.svg"
 
             /*Image {
                 id: name
@@ -47,13 +47,6 @@ Rectangle{
 
                 onClicked: {
                     animationMenu.running = true
-                    /*if(topMenu.width === 0){
-                            btnSettings.btnIconSource = "../images/svg_images/close_icon_2.svg"
-                            settingsTooltip.text = "Hide settings"
-                        } else {
-                            btnSettings.btnIconSource = "../images/svg_images/settings_icon.svg"
-                            settingsTooltip.text = "Account configurations"
-                        }*/
                 }
             }
         }
@@ -79,30 +72,36 @@ Rectangle{
                 easing.type: Easing.InOutQuint
             }
 
-            CustomButton {
-                id: file_btn
-                width: 80
-                height: 40
-                text: "File"
-                anchors.left: topMenu.left
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: 10
-                colorDefault: "#2d2d3b"
-            }
-            CustomButton {
-                width: 80
-                height: 40
-                text: "Analyse"
-                anchors.left: file_btn.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: 10
-                colorDefault: "#2d2d3b"
+            MenuBar {
+                id: menubar
+                Menu {
+                    title: "File"
+                    Action {
+                        text: "New"
+                        onTriggered: console.log("New clicked")
+                    }
+                    Action {
+                        text: "Open"
+                        onTriggered: console.log("Open clicked")
+                    }
+                    Action {
+                        text: "Exit"
+                        onTriggered: Qt.quit()
+                    }
+                    Action {
+                        text: "Export airfoil"
+                        onTriggered: console.log("Export")
+                    }
+                }
+                Menu {
+                    title: "Analyse"
+                }
             }
         }
 
-        TopBarButton {
+        WindowButton {
             id: closeButton
-            btnIconSource: "../../images/svg_images/close_icon.svg"
+            btnIconSource: "../../assets/svg_images/close_icon.svg"
             anchors.right: top_tool_bar.right
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40
@@ -113,9 +112,9 @@ Rectangle{
             }
             onPressed: mainWindow.close()
         }
-        TopBarButton {
+        WindowButton {
             id: maxButton
-            btnIconSource: "../../images/svg_images/maximize_icon.svg"
+            btnIconSource: "../../assets/svg_images/maximize_icon.svg"
             anchors.right: closeButton.left
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40
@@ -126,9 +125,9 @@ Rectangle{
             }
             onClicked: internal.maximizeRestore()
         }
-        TopBarButton {
+        WindowButton {
             id: minButton
-            btnIconSource: "../../images/svg_images/minimize_icon.svg"
+            btnIconSource: "../../assets/svg_images/minimize_icon.svg"
             anchors.right: maxButton.left
             anchors.verticalCenter: top_tool_bar.verticalCenter
             width: 40

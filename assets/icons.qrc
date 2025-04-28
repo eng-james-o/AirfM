@@ -1,0 +1,42 @@
+<RCC>
+    <qresource prefix="/svg">
+        <file>svg_images/adjustments_icon.svg</file>
+        <file>svg_images/airfoil.svg</file>
+        <file>svg_images/arrow_left_menu.svg</file>
+        <file>svg_images/cart_icon.svg</file>
+        <file>svg_images/close_icon.svg</file>
+        <file>svg_images/close_icon_2.svg</file>
+        <file>svg_images/cobrar_icon.svg</file>
+        <file>svg_images/codebar_icon.svg</file>
+        <file>svg_images/depositar_icon.svg</file>
+        <file>svg_images/dividir_icon.svg</file>
+        <file>svg_images/emprestimos_icon.svg</file>
+        <file>svg_images/eye_close_icon.svg</file>
+        <file>svg_images/eye_open_icon.svg</file>
+        <file>svg_images/help_icon.svg</file>
+        <file>svg_images/home_icon.svg</file>
+        <file>svg_images/home_PJ_icon.svg</file>
+        <file>svg_images/icon_app_top.svg</file>
+        <file>svg_images/indicar_amigos_icon.svg</file>
+        <file>svg_images/lock_icon.svg</file>
+        <file>svg_images/maximize_icon.svg</file>
+        <file>svg_images/menu_icon.svg</file>
+        <file>svg_images/message_icon.svg</file>
+        <file>svg_images/minimize_icon.svg</file>
+        <file>svg_images/moeda_icon.svg</file>
+        <file>svg_images/open_icon.svg</file>
+        <file>svg_images/pix_icon.svg</file>
+        <file>svg_images/qr-code.svg</file>
+        <file>svg_images/resize_icon.svg</file>
+        <file>svg_images/restore_icon.svg</file>
+        <file>svg_images/save_icon.svg</file>
+        <file>svg_images/settings_icon.svg</file>
+        <file>svg_images/smartphone_icon.svg</file>
+        <file>svg_images/transferir_icon.svg</file>
+        <file>svg_images/user_icon.svg</file>
+        <file>svg_images/virtual_cart_icon.svg</file>
+    </qresource>
+    <qresource prefix="/png">
+        <file>airfoil.png</file>
+    </qresource>
+</RCC>

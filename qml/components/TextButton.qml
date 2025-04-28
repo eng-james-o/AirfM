@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtGraphicalEffects 1.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+// import QtGraphicalEffects 1.12
 
 Button {
     id: button
@@ -9,6 +9,14 @@ Button {
     property color colorDefault: "#4891d9"
     property color colorMouseOver: "#55AAFF"
     property color colorPressed: "#3F7EBD"
+    property color textColor: "#000000"
+    property color borderColor: textColor
+
+    text: qsTr("Button")
+    width: 50
+    implicitWidth: 50
+    height: 25
+    implicitHeight: 25
 
     QtObject{
         id: internal
@@ -20,25 +28,25 @@ Button {
                                    }
     }
 
-    text: qsTr("Button")
     contentItem: Item{
+        anchors.fill: parent
+
         Text {
             id: name
             text: button.text
             font: button.font
-            color: "#ffffff"
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
+            color: textColor
+            anchors.centerIn: parent
         }
     }
 
     background: Rectangle{
+        id: bg
         color: internal.dynamicColor
-        radius: 10
+        anchors.fill: parent
+        radius: 5
+        border.color: button.borderColor
+        border.width: 2
     }
 }
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:40;width:200}
-}
-##^##*/
+

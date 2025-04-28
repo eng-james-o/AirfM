@@ -23,6 +23,7 @@ tags
 .DS_Store
 .directory
 *.debug
+*.zip
 Makefile*
 *.prl
 *.app
@@ -73,19 +74,29 @@ Thumbs.db
 *.dll
 *.exe
 
-# UI designs
+# Adobe UI designs
 *.xd
 
 # virtual environment
-airfoilenv
+.venv
+
+# vs code settings
+.vscode/
+.vscode/*
+.code-workspace
 
 # temporary python files
-main2.py
-main3.py
-main2.qml
+__pycache__
+
+# logs
+*.log
 
 # undone files
 data/coord_seligFmt
+airfoils/airfoil_archive
+
+# experiments
+# *.ipynb
 airfoils/airfoil_archive2.zip
 
 .vscode

@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import QtCharts 2.15
+import QtQuick 2.12
+import QtQuick.Window 2.12
+import QtQuick.Controls 2.12
+import QtCharts 2.12
 import "../components"
 
 Item {
@@ -30,25 +30,10 @@ Item {
             height: 50
             //x: 20
             //y: 30
-            textRole: "text"
-            valueRole: "path"
-            model: ListModel {
-                id: foilItems
-                ListElement {
-                    text: "Select airfoil"
-                    path: ""
-                }
-
-                ListElement {
-                    // populate this model with a script that reads
-                    // the contents of the directory and creates a model
-                    text: "clark-y"
-                    path: "C:/Users/PC/Documents/Research and Projects/James-Mary AC design/airfoils/clarky.dat"
-                }
-            }
+            
             onCurrentValueChanged: {
-                dataModel.loadData(select_foil_combobox.currentValue)
-                //onCurrentIndexChanged: console.debug(cbItems.get(currentIndex).text + ", " + cbItems.get(currentIndex).color)
+                dataModel.load(select_foil_combobox.currentValue)
+                console.log(select_foil_combobox.currentValue)
             }
         }
         ManipulationSpinBox {
@@ -81,8 +66,8 @@ Item {
             anchors.margins: 10
         }
 
-        CustomButton {
-            // eliminate button by assigning its function to onCuurentItemCHanged of the combobox
+        TextButton {
+            // eliminate button by assigning its function to onCurrentItemCHanged of the combobox
             // and set the initial item of the combobox to empty, with the text "select foil"
             // add to python backend to do nothing if the function is called on an empty path, instead of crash on an error
             text: "Clear"
@@ -115,17 +100,15 @@ Item {
 
             var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
             for (var i = 0; i < dataModel.data.length; ++i) {
-                series.append(dataModel.data[i].x, dataModel.data[i].y);
-                //console.log(i);
+                console.log(i);
                 //console.log(dataModel.data[i][0], dataModel.data[i][1]);
-                //series.append(dataModel.data[i][0], dataModel.data[i][1]);
-
+                series.append(dataModel.data[i][0], dataModel.data[i][1]);
             }
         }
 
         Connections {
             target: dataModel
-            onDataChanged: {
+            function onDataChanged () {
                 console.log('data changed')
                 //console.log(dataModel.data)
                 foil_chart.loadChartData();
@@ -147,3 +130,9 @@ Item {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/
