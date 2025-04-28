@@ -2,12 +2,13 @@
 # check which version of pyside is installed on the system and tailor the imports in main.py accordingly which means that this file should either run before main.py, or main.py should do only what is necessary to run the splash first before calling this file, and then this file handles the rest of the setup
 # it is supposed to setup the paths for the airfoils, after checking if they are available
 # it should call the script to download the foils and save them, if they do not exist
-
+import json
 from PySide2.QtCore import QObject, Slot, Signal, Property, QThread
 import logging
 import time
 
 from scripts.functions import get_foils_from_dir
+from models.data import Airfoil, AirfoilTransformation
 from globals import AIRFOILS_FOLDER
 from models.data import AirfoilListModel, ProjectListModel
 import os
@@ -74,10 +75,26 @@ class SplashController(QObject):
         self.loadingComplete.emit()
 
 class ProjectController(QObject):
+    current_project_path = None
+    current_project_data = None
     def __init__(self, parent=None):
         super(ProjectController, self).__init__(parent)
+        self.current_project_data = {
+            "airfoils": [],
+            "transformations": [],
+            "derived_airfoils": []
+        }
     
-    @Slot()
+    def get_project_data(self):
+        """
+        Returns the current project data.
+        """
+        return self.current_project_data
+
+    def save_current_project(self):
+        self.save_project(self.current_project_path)
+
+    @Slot(result=bool)
     def new_project(self):
         """
         Creates a new project stored as a file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
@@ -98,16 +115,28 @@ class ProjectController(QObject):
             if not file_path.endswith(".afm"):
                 file_path += ".afm"
 
-            # Create an empty project file
-            try:
-                with open(file_path, 'w') as project_file:
-                    project_file.write("# Airfoil Project File\n")
-                    project_file.write("# This file stores airfoils, transformations, and derived airfoils\n")
-                logger.info(f"New project created at {file_path}")
-            except Exception as e:
-                logger.error(f"Failed to create project file: {e}")
-
-    @Slot(str)
+            self.current_project_path = file_path
+            self.current_project_data = {
+                "airfoils": [],
+                "transformations": [],
+                "derived_airfoils": []
+            }
+            return self.save_project(file_path)
+        return False
+    
+    def save_project(self, file_path):
+        """
+        Saves the project data to the specified file.
+        """
+        try:
+            with open(file_path, 'w') as project_file:
+                json.dump(self.current_project_data, project_file, indent=4)
+            logger.info(f"Project saved to {file_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save project file: {e}")
+            return False
+    @Slot(str, result=bool)
     def open_project(self):
         """
         Opens an existing project file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
@@ -123,21 +152,46 @@ class ProjectController(QObject):
         )
 
         if file_path:
-            # Load the project file
             try:
                 with open(file_path, 'r') as project_file:
-                    content = project_file.read()
+                    self.current_project_data = json.load(project_file)
                 logger.info(f"Project opened from {file_path}")
+                self.current_project_path = file_path
+                return True
             except Exception as e:
                 logger.error(f"Failed to open project file: {e}")
-
-class MainController(QObject):
-    def __init__(self, parent = ...):
-        super(MainController, self).__init__(parent)
+                return False
+        return False
     
-    def save(self):
-        """
-        Save the project progress into the .afm file
-        """
-        # Implement the save logic here
-        pass
+    @Slot(str, str)
+    def add_airfoil(self, name, path):
+        if self.current_project_data:
+            self.current_project_data["airfoils"].append({"name": name, "path": path})
+            logger.info(f"Airfoil {name} added to the project")
+        else:
+            logger.warning("Cannot add airfoil. No project opened.")
+
+    @Slot(str, str, object)
+    def add_transformation(self, airfoil_name, transformation_type, parameters):
+        if self.current_project_data:
+            transformation = {
+                "airfoil_name": airfoil_name,
+                "type": transformation_type,
+                "parameters": parameters.toVariant()  # Convert QVariant to Python object
+            }
+            self.current_project_data["transformations"].append(transformation)
+            logger.info(f"Transformation {transformation_type} added to {airfoil_name}")
+        else:
+            logger.warning("Cannot add transformation. No project opened.")
+class MainController(QObject):
+    def __init__(self, project_controller, parent = ...):
+        super(MainController, self).__init__(parent)
+        self.project_controller = project_controller
+
+    @Slot()
+    def save_project(self):
+        self.project_controller.save_current_project()
+    @Slot()
+    def close_project(self):
+        self.project_controller.current_project_path = None
+        self.project_controller.current_project_data = None
