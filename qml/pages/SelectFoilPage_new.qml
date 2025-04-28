@@ -1,7 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
-import QtQuick.Layouts 2.12
+import QtQuick.Layouts 1.12
 import QtCharts 2.12
 import QtQuick.Dialogs 1.2
 import "../components"
@@ -21,9 +21,8 @@ Item {
         anchors.margins: 10
         color: "#e3e3e3"
         border.color: "#33334c"
-//        width: 320
+        //        width: 320
         height: 70
-
 
         Label {
             text: "Add airfoil"
@@ -32,27 +31,20 @@ Item {
             anchors.top: parent.top
             anchors.leftMargin: content_page.spacing
         }
+
         RowLayout {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 5
-            height: 40
+            spacing: 5
+            anchors.fill: parent
+            anchors.margins: 10
 
             CustomComboBox {
                 id: select_foilCombobox
-                Layout.maximumHeight: 40
-                Layout.minimumHeight: 30
-                Layout.maximumWidth: 160
-                Layout.minimumWidth: 120
-                Layout.fillHeight: true
-                //                anchors.left: parent.left
-                //                anchors.bottom: parent.bottom
-                //                anchors.margins: content_page.spacing
-                Layout.preferredWidth: 140
                 Layout.preferredHeight: 30
-                Layout.fillWidth: true
-                //                anchors.bottomMargin: 6
+                Layout.minimumHeight: 30
+
+//                anchors.left: parent.left
+//                anchors.bottom: parent.bottom
+//                anchors.margins: content_page.spacing
 
                 onCurrentValueChanged: {
                     dataModel.load(select_foilCombobox.currentValue)
@@ -61,24 +53,24 @@ Item {
             }
             TextButton {
                 id: openButton
-                implicitHeight: 40
-                implicitWidth: 60
                 text: qsTr("Open")
+                Layout.minimumWidth: 50
+                Layout.minimumHeight: 30
                 colorDefault: "white"
             }
             TextButton {
                 id: duplicateButton
                 text: qsTr("Duplicate")
+                Layout.minimumHeight: 30
+                Layout.minimumWidth: 80
 
-                implicitHeight: 40
-                implicitWidth: 80
                 colorDefault: "white"
             }
         }
     }
     Rectangle {
         id: transformContainer
-//        anchors.left: addContainer.right
+        //        anchors.left: addContainer.right
         anchors.top: parent.top
         anchors.right: parent.right
         radius: 10
@@ -95,21 +87,23 @@ Item {
             anchors.top: parent.top
             anchors.leftMargin: content_page.spacing
         }
+
         RowLayout {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 5
-            height: 40
+            spacing: 5
+            anchors.fill: parent
+            anchors.margins: 10
+
             TextButton {
                 id: translateButton
                 text: qsTr("Translate")
-                anchors.bottomMargin: 6
+                Layout.minimumWidth: 80
+                Layout.minimumHeight: 30
+//                anchors.bottomMargin: 6
                 width: 75
                 height: 30
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.margins: content_page.spacing
+//                anchors.bottom: parent.bottom
+//                anchors.left: parent.left
+//                anchors.margins: content_page.spacing
                 colorDefault: "white"
                 onClicked: {
                     translateDialog.open()
@@ -119,10 +113,12 @@ Item {
                 id: scaleButton
                 height: 30
                 text: qsTr("Scale")
-                anchors.bottomMargin: 6
-                anchors.bottom: parent.bottom
-                anchors.left: translateButton.right
-                anchors.margins: content_page.spacing
+                Layout.minimumWidth: 50
+                Layout.minimumHeight: 30
+//                anchors.bottomMargin: 6
+//                anchors.bottom: parent.bottom
+//                anchors.left: translateButton.right
+//                anchors.margins: content_page.spacing
                 colorDefault: "white"
             }
             TextButton {
@@ -130,54 +126,59 @@ Item {
                 width: 60
                 height: 30
                 text: qsTr("Rotate")
-                anchors.bottomMargin: 6
-                anchors.bottom: parent.bottom
-                anchors.left: scaleButton.right
-                anchors.margins: content_page.spacing
+                Layout.minimumWidth: 60
+                Layout.minimumHeight: 30
+//                anchors.bottomMargin: 6
+//                anchors.bottom: parent.bottom
+//                anchors.left: scaleButton.right
+//                anchors.margins: content_page.spacing
                 colorDefault: "white"
             }
             TextButton {
                 id: flipButton
                 height: 30
                 text: qsTr("Flip")
-                anchors.bottomMargin: 6
-                anchors.bottom: parent.bottom
-                anchors.left: rotateButton.right
-                anchors.margins: content_page.spacing
+                Layout.minimumWidth: 50
+                Layout.minimumHeight: 30
+//                anchors.bottomMargin: 6
+//                anchors.bottom: parent.bottom
+//                anchors.left: rotateButton.right
+//                anchors.margins: content_page.spacing
                 colorDefault: "white"
             }
-        }
-        Popup {
-            id: translateDialog
-            width: 200
-            height: 200
-            visible: false
 
-            background: Rectangle {
-                id: translateDialog_bg
-                implicitWidth: parent.width
-                implicitHeight: parent.height
-                border.color: "#707070"
-                border.width: 1
-                radius: 10
-            }
-            contentItem: Item {
-                width: parent.width - 10
-                height: parent.height - 10
-                anchors.centerIn: translateDialog_bg
-                ManipulationSpinBox {
-                    id: xSpinbox
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: 10
+            Popup {
+                id: translateDialog
+                width: 200
+                height: 200
+                visible: false
+
+                background: Rectangle {
+                    id: translateDialog_bg
+                    implicitWidth: parent.width
+                    implicitHeight: parent.height
+                    border.color: "#707070"
+                    border.width: 1
+                    radius: 10
                 }
-                ManipulationSpinBox {
-                    id: ySpinbox
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: xSpinbox.bottom
-                    anchors.margins: 10
+                contentItem: Item {
+                    width: parent.width - 10
+                    height: parent.height - 10
+                    anchors.centerIn: translateDialog_bg
+                    ManipulationSpinBox {
+                        id: xSpinbox
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 10
+                    }
+                    ManipulationSpinBox {
+                        id: ySpinbox
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: xSpinbox.bottom
+                        anchors.margins: 10
+                    }
                 }
             }
         }
@@ -216,9 +217,10 @@ Item {
                 id: rectangle
 
                 width: actionList.width - 5 // actionList.childrenRect.width //actionList.contentItem.width
-                height: childrenRect.height + 10
+                height: sectiontext.height + 10
 
                 Rectangle {
+                    id: action_child
                     anchors.fill: parent
                     anchors.margins: 5
                     color: "lightsteelblue"
@@ -292,22 +294,22 @@ Item {
         }
     }
 
-//    ManipulationSpinBox {
-//        id: rotationSpinbox
-//        unit: "deg"
-//        anchors.left: parent.left
-//        anchors.right: parent.right
-//        anchors.top: select_foil_combobox.bottom
-//        anchors.margins: 10
-//    }
-//    ManipulationSpinBox {
-//        id: scalingSpinbox
-//        anchors.left: parent.left
-//        anchors.right: parent.right
-//        anchors.top: rotationSpinbox.bottom
-//        anchors.margins: 10
-//    }
-//
+    //    ManipulationSpinBox {
+    //        id: rotationSpinbox
+    //        unit: "deg"
+    //        anchors.left: parent.left
+    //        anchors.right: parent.right
+    //        anchors.top: select_foil_combobox.bottom
+    //        anchors.margins: 10
+    //    }
+    //    ManipulationSpinBox {
+    //        id: scalingSpinbox
+    //        anchors.left: parent.left
+    //        anchors.right: parent.right
+    //        anchors.top: rotationSpinbox.bottom
+    //        anchors.margins: 10
+    //    }
+    //
 
     TextButton {
         // eliminate button by assigning its function to onCurrentItemCHanged of the combobox

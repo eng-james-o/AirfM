@@ -81,7 +81,9 @@ Thumbs.db
 .venv
 
 # vs code settings
-.vscode
+.vscode/
+.vscode/*
+.code-workspace
 
 # temporary python files
 __pycache__
