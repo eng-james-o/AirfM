@@ -9,5 +9,7 @@ PROJECT_DIR = Path(__file__).resolve().parent
 AIRFOILS_FOLDER = os.path.join(PROJECT_DIR / 'airfoils' / 'airfoil_archive')
 
 # Relative path to the qml files
-MAIN_QML_FILE = os.path.join(PROJECT_DIR / 'qml', 'main.qml')
-SPLASH_QML_FILE = os.path.join(PROJECT_DIR / 'qml', 'splash.qml')
+MAIN_QML_FILE = os.path.join(PROJECT_DIR, 'qml', 'main.qml')
+SPLASH_QML_FILE = os.path.join(PROJECT_DIR, 'qml', 'splash.qml')
+PROJECT_PAGE_QML_FILE = os.path.join(PROJECT_DIR, 'qml/pages/SelectProjectPage.qml')
+MAIN_PAGE_QML_FILE = os.path.join(PROJECT_DIR, 'qml/pages/SelectFoilPage_new.qml')

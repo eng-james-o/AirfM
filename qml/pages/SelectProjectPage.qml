@@ -173,11 +173,83 @@ Item {
     Dialog {
         id: newProjectDialog
         title: qsTr("New Project")
-        // guide the user through creating the
-        // project with multipages
+
         StackView {
             id: stack
             anchors.fill: parent
+
+            initialItem: Page {
+                id: projectNamePage
+
+                ColumnLayout {
+                    spacing: 10
+                    anchors.fill: parent
+
+                    Label {
+                        text: "Enter Project Name"
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    TextField {
+                        id: projectNameField
+                        placeholderText: "Project Name"
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    Button {
+                        text: "Next"
+                        Layout.alignment: Qt.AlignHCenter
+                        onClicked: {
+                            if (projectNameField.text.trim() !== "") {
+                                stack.push(projectLocationPage)
+                            } else {
+                                console.log("Project name cannot be empty")
+                            }
+                        }
+                    }
+                }
+            }
+
+            Component {
+                id: projectLocationPage
+
+                Page {
+                    id: locationPage
+
+                    ColumnLayout {
+                        spacing: 10
+                        anchors.fill: parent
+
+                        Label {
+                            text: "Select Project Location"
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        FileDialog {
+                            id: locationDialog
+                            title: "Select Project Directory"
+                            folder: shortcuts.Documents
+                            selectFolder: true
+                            onAccepted: {
+                                projectController.new_project(projectNameField.text, fileUrl)
+                                newProjectDialog.close()
+                            }
+                        }
+
+                        Button {
+                            text: "Choose Location"
+                            Layout.alignment: Qt.AlignHCenter
+                            onClicked: locationDialog.open()
+                        }
+
+                        Button {
+                            text: "Back"
+                            Layout.alignment: Qt.AlignHCenter
+                            onClicked: stack.pop()
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -173,25 +173,26 @@ Window {
                                  }
             }
         }
-        SwipeView {
-            id: main_swipe_view
+        StackView {
+            id: stackView
+            anchors.fill: parent
             anchors.top: topBar.bottom
+            anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 20
+            anchors.margins: 20
 
-            currentIndex: 1
-            SelectFoilPage_new {
-                id: select_foil_page
+            initialItem: SelectProjectPage {
+                id: selectProjectPage
             }
         }
-        PageIndicator {
-            id: indicator
-            count: main_swipe_view.count
-            currentIndex: main_swipe_view.currentIndex
-            anchors.bottom: main_swipe_view.bottom
-            anchors.horizontalCenter: main_swipe_view.horizontalCenter
+
+        Connections {
+            target: projectController
+
+            onProjectSelected: {
+                stackView.push(Qt.resolvedUrl("pages/SelectFoilPage_new.qml"));
+            }
         }
     }
 }

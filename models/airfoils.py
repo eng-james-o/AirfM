@@ -123,7 +123,7 @@ class Airfoil_new(QObject):
     
     Returns:
         name (str): Airfoil name.
-        num_points (int): Total number of coordinate points defined in the file.
+        num_points (int): Total number of coordinate points, including duplicates.
         x_upper (np.ndarray): x-coordinates for the upper surface.
         y_upper (np.ndarray): y-coordinates for the upper surface.
         x_lower (np.ndarray): x-coordinates for the lower surface.
@@ -609,7 +609,6 @@ class Airfoil_new(QObject):
         lower_x, lower_y = scaled_lower[:,0], scaled_lower[:,1]
 
         return upper_x, upper_y, lower_x, lower_y
-
 
 class Airfoil:
     """
@@ -1102,6 +1101,121 @@ class Airfoil:
         scaled_lower = np.dot(np.column_stack((x_lower, y_lower)), self.SCALING_MATRIX)
         lower_x, lower_y = scaled_lower[:,0], scaled_lower[:,1]
 
+        return upper_x, upper_y, lower_x, lower_y
+
+class AirfoilTransformation:
+    """
+    A class to handle various transformations for airfoil objects, such as scaling, translating, rotating, and flipping.
+    """
+
+    @staticmethod
+    def scale_to(upper_x, upper_y, lower_x, lower_y, chord):
+        """
+        Scales the airfoil to the given chord.
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            chord: The desired chord of the airfoil.
+        Returns:
+            tuple: Scaled upper_x, upper_y, lower_x, lower_y.
+        """
+        old_chord = AirfoilTransformation.calculate_chord(upper_x, upper_y)
+        sc_factor = chord / old_chord
+        return AirfoilTransformation.__scale(upper_x, upper_y, lower_x, lower_y, sc_factor)
+
+    @staticmethod
+    def translate_to(upper_x, upper_y, lower_x, lower_y, x_position, y_position):
+        """
+        Translates the airfoil to a desired x, y position.
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            x_position, y_position: Desired position.
+        Returns:
+            tuple: Translated upper_x, upper_y, lower_x, lower_y.
+        """
+        quarter_chord_x, quarter_chord_y = AirfoilTransformation.calculate_quarter_chord(upper_x, upper_y)
+        dx = x_position - quarter_chord_x
+        dy = y_position - quarter_chord_y
+        return AirfoilTransformation.__translate(upper_x, upper_y, lower_x, lower_y, dx, dy)
+
+    @staticmethod
+    def rotate_to(upper_x, upper_y, lower_x, lower_y, angle):
+        """
+        Rotates the airfoil to a specific angle.
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            angle: Desired angle in degrees.
+        Returns:
+            tuple: Rotated upper_x, upper_y, lower_x, lower_y.
+        """
+        return AirfoilTransformation.__rotate(upper_x, upper_y, lower_x, lower_y, angle)
+
+    @staticmethod
+    def calculate_quarter_chord(upper_x, upper_y):
+        """
+        Calculates the position of the quarter chord of the airfoil.
+        Returns:
+            tuple: x, y coordinates of the quarter chord.
+        """
+        return (((upper_x[-1] - upper_x[0]) / 4) + upper_x[0], ((upper_y[-1] - upper_y[0]) / 4) + upper_y[0])
+
+    @staticmethod
+    def calculate_chord(upper_x, upper_y):
+        """
+        Calculates the length of the chord of the airfoil.
+        Returns:
+            float: Chord length.
+        """
+        return np.sqrt((upper_x[-1] - upper_x[0])**2 + (upper_y[-1] - upper_y[0])**2)
+
+    @staticmethod
+    def __translate(upper_x, upper_y, lower_x, lower_y, dx, dy):
+        """
+        Moves the airfoil by a specific distance in the vertical and horizontal.
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            dx, dy: Translation distances.
+        Returns:
+            tuple: Translated upper_x, upper_y, lower_x, lower_y.
+        """
+        upper_x += dx
+        upper_y += dy
+        lower_x += dx
+        lower_y += dy
+        return upper_x, upper_y, lower_x, lower_y
+
+    @staticmethod
+    def __rotate(upper_x, upper_y, lower_x, lower_y, angle):
+        """
+        Rotates the airfoil by a specific angle about the origin (0,0).
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            angle: Rotation angle in degrees.
+        Returns:
+            tuple: Rotated upper_x, upper_y, lower_x, lower_y.
+        """
+        angle_rad = np.deg2rad(angle)
+        rotation_matrix = np.array([
+            [np.cos(angle_rad), -np.sin(angle_rad)],
+            [np.sin(angle_rad),  np.cos(angle_rad)]
+        ])
+        upper = np.dot(np.column_stack((upper_x, upper_y)), rotation_matrix)
+        lower = np.dot(np.column_stack((lower_x, lower_y)), rotation_matrix)
+        return upper[:, 0], upper[:, 1], lower[:, 0], lower[:, 1]
+
+    @staticmethod
+    def __scale(upper_x, upper_y, lower_x, lower_y, scale_factor):
+        """
+        Scales the airfoil by a scale factor.
+        Args:
+            upper_x, upper_y, lower_x, lower_y: Coordinates of the airfoil.
+            scale_factor: Scaling factor.
+        Returns:
+            tuple: Scaled upper_x, upper_y, lower_x, lower_y.
+        """
+        upper_x *= scale_factor
+        upper_y *= scale_factor
+        lower_x *= scale_factor
+        lower_y *= scale_factor
         return upper_x, upper_y, lower_x, lower_y
 
 class NACA4DigitFoil(Airfoil):

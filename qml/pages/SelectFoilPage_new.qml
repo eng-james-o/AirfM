@@ -183,6 +183,7 @@ Item {
             }
         }
     }
+
     ListView {
         id: actionList
         width: 150
@@ -192,7 +193,7 @@ Item {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 10
-        spacing: 5
+//        spacing: 5
 
         delegate: actionDelegate
         model: actionlistModel
@@ -208,7 +209,6 @@ Item {
             border.color: "#707070"
             border.width: 2
             anchors.fill: parent
-
         }
 
         Component {
@@ -227,11 +227,11 @@ Item {
                     border.width: 2
                     radius: 5
                     border.color: "#5094ee"
-                    Rectangle {
-                        width: 2
-                        //height: actionList.section.
-                        //height: actionList.contentHeight
-                    }
+//                    Rectangle {
+//                        width: 2
+//                        //height: actionList.section.
+//                        //height: actionList.contentHeight
+//                    }
                 }
                 Label {
                     id: sectiontext
@@ -240,7 +240,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                     horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 10
                     font.bold: true
                 }
             }
@@ -278,10 +278,10 @@ Item {
             Rectangle {
                 x: 10
                 width: 5
-                height: childrenRect.height
+                height: childrenRect.height //+ 2
                 color: "black"
-                radius: 5
                 border.width: 2
+//                radius: border.width
 
                 Label {
                     text: actionName
@@ -371,6 +371,106 @@ Item {
             id:myaxisY
             min: -0.5; max: 0.5
             tickCount: 11
+        }
+    }
+
+    Dialog {
+        id: newProjectDialog
+        title: qsTr("New Project")
+        modal: true
+        width: 400
+        height: 300
+        visible: false
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#f0f0f0"
+            radius: 10
+            border.color: "#707070"
+            border.width: 1
+
+            StackView {
+                id: stack
+                anchors.fill: parent
+
+                initialItem: Page {
+                    id: projectNamePage
+
+                    ColumnLayout {
+                        spacing: 10
+                        anchors.fill: parent
+                        anchors.margins: 20
+
+                        Label {
+                            text: "Enter Project Name"
+                            font.pixelSize: 16
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        TextField {
+                            id: projectNameField
+                            placeholderText: "Project Name"
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        RowLayout {
+                            spacing: 10
+                            Layout.alignment: Qt.AlignHCenter
+
+                            Button {
+                                text: "Next"
+                                enabled: projectNameField.text.trim() !== ""
+                                onClicked: {
+                                    stack.push(projectSummaryPage)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Component {
+                    id: projectSummaryPage
+
+                    Page {
+                        id: summaryPage
+
+                        ColumnLayout {
+                            spacing: 10
+                            anchors.fill: parent
+                            anchors.margins: 20
+
+                            Label {
+                                text: "Summary"
+                                font.pixelSize: 16
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            Text {
+                                text: "Project Name: " + projectNameField.text
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            RowLayout {
+                                spacing: 10
+                                Layout.alignment: Qt.AlignHCenter
+
+                                Button {
+                                    text: "Previous"
+                                    onClicked: stack.pop()
+                                }
+
+                                Button {
+                                    text: "Done"
+                                    onClicked: {
+                                        projectController.new_project(projectNameField.text)
+                                        newProjectDialog.close()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

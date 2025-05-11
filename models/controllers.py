@@ -8,7 +8,7 @@ import logging
 import time
 
 from scripts.functions import get_foils_from_dir
-from models.data import Airfoil, AirfoilTransformation
+from models.airfoils import Airfoil_new, AirfoilTransformation
 from globals import AIRFOILS_FOLDER
 from models.data import AirfoilListModel, ProjectListModel
 import os
@@ -75,8 +75,12 @@ class SplashController(QObject):
         self.loadingComplete.emit()
 
 class ProjectController(QObject):
+    """
+    This class handles the project data, including loading and saving projects, and managing airfoils and transformations."""
     current_project_path = None
     current_project_data = None
+    projectSelected = Signal()  # Signal emitted when a project is selected or created
+
     def __init__(self, parent=None):
         super(ProjectController, self).__init__(parent)
         self.current_project_data = {
@@ -91,39 +95,63 @@ class ProjectController(QObject):
         """
         return self.current_project_data
 
-    def save_current_project(self):
-        self.save_project(self.current_project_path)
-
-    @Slot(result=bool)
-    def new_project(self):
+    @Slot(str)
+    def new_project(self, project_name):
         """
         Creates a new project stored as a file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
         """
-        
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        file_path, _ = QFileDialog.getSaveFileName(
-            None,
-            "Create New Project",
-            "",
-            "Airfoil Project Files (*.afm);;All Files (*)",
-            options=options
-        )
+        try:
+            # Define the default project location
+            documents_folder = os.path.expanduser("~\\Documents")
+            airfm_folder = os.path.join(documents_folder, "Airfm")
+            os.makedirs(airfm_folder, exist_ok=True)
 
-        if file_path:
-            # Ensure the file has the correct extension
-            if not file_path.endswith(".afm"):
-                file_path += ".afm"
+            # Create the project directory
+            project_path = os.path.join(airfm_folder, project_name)
+            os.makedirs(project_path, exist_ok=True)
 
-            self.current_project_path = file_path
+            # Create the exports folder inside the project directory
+            exports_path = os.path.join(project_path, "exports")
+            os.makedirs(exports_path, exist_ok=True)
+
+            # Create the .afm project file
+            project_file_path = os.path.join(project_path, f"{project_name}.afm")
+            self.current_project_path = project_file_path
             self.current_project_data = {
                 "airfoils": [],
                 "transformations": [],
                 "derived_airfoils": []
             }
-            return self.save_project(file_path)
-        return False
-    
+            self.save_project(project_file_path)
+            self.projectSelected.emit()
+            logger.info(f"New project created at {project_file_path}")
+        except Exception as e:
+            logger.error(f"Failed to create new project: {e}")
+
+    @Slot(str)
+    def open_project(self, project_file_path):
+        """
+        Opens an existing project file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
+        """
+        try:
+            with open(project_file_path, 'r') as project_file:
+                self.current_project_data = json.load(project_file)
+            self.current_project_path = project_file_path
+            self.projectSelected.emit()
+            logger.info(f"Project opened from {project_file_path}")
+        except Exception as e:
+            logger.error(f"Failed to open project file: {e}")
+
+    @Slot()
+    def save_current_project(self):
+        """
+        Saves the current project to its file.
+        """
+        if self.current_project_path:
+            self.save_project(self.current_project_path)
+        else:
+            logger.warning("No project path specified. Cannot save project.")
+
     def save_project(self, file_path):
         """
         Saves the project data to the specified file.
@@ -136,33 +164,15 @@ class ProjectController(QObject):
         except Exception as e:
             logger.error(f"Failed to save project file: {e}")
             return False
-    @Slot(str, result=bool)
-    def open_project(self):
-        """
-        Opens an existing project file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
-        """
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        file_path, _ = QFileDialog.getOpenFileName(
-            None,
-            "Open Project",
-            "",
-            "Airfoil Project Files (*.afm);;All Files (*)",
-            options=options
-        )
-
-        if file_path:
-            try:
-                with open(file_path, 'r') as project_file:
-                    self.current_project_data = json.load(project_file)
-                logger.info(f"Project opened from {file_path}")
-                self.current_project_path = file_path
-                return True
-            except Exception as e:
-                logger.error(f"Failed to open project file: {e}")
-                return False
-        return False
     
+    def select_project(self, project_path):
+        """
+        Selects a project and emits the projectSelected signal.
+        """
+        self.current_project_path = project_path
+        self.projectSelected.emit()
+        logger.info(f"Project selected: {project_path}")
+
     @Slot(str, str)
     def add_airfoil(self, name, path):
         if self.current_project_data:
@@ -183,8 +193,13 @@ class ProjectController(QObject):
             logger.info(f"Transformation {transformation_type} added to {airfoil_name}")
         else:
             logger.warning("Cannot add transformation. No project opened.")
+
 class MainController(QObject):
-    def __init__(self, project_controller, parent = ...):
+    """
+    This class handles the main application logic, including saving and closing projects.
+    """
+
+    def __init__(self, project_controller, parent = None):
         super(MainController, self).__init__(parent)
         self.project_controller = project_controller
 

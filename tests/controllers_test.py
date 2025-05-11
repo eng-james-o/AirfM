@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from models.controllers import AirfoilController, ProjectController
 from PySide2.QtWidgets import QFileDialog
+import os
 
 @pytest.fixture
 def airfoil_controller():
@@ -94,3 +95,62 @@ def test_project_controller_delete_project(project_controller):
 
     # Test deleting a non-existing project
     project_controller.delete_project("Project5") # Should not raise an error
+
+def test_new_project_creation(project_controller):
+    """Test to ensure a new project is created correctly."""
+    project_name = "TestProject"
+    documents_folder = os.path.expanduser("~\\Documents")
+    airfm_folder = os.path.join(documents_folder, "Airfm")
+    project_path = os.path.join(airfm_folder, project_name)
+
+    # Ensure the project does not already exist
+    if os.path.exists(project_path):
+        os.rmdir(project_path)
+
+    project_controller.new_project(project_name)
+
+    # Check if the project directory and files are created
+    assert os.path.exists(project_path), "Project directory was not created."
+    assert os.path.exists(os.path.join(project_path, "exports")), "Exports folder was not created."
+    assert os.path.exists(os.path.join(project_path, f"{project_name}.afm")), \
+        ".afm project file was not created."
+
+def test_open_project(project_controller):
+    """Test to ensure an existing project can be opened."""
+    project_name = "TestProject"
+    documents_folder = os.path.expanduser("~\\Documents")
+    airfm_folder = os.path.join(documents_folder, "Airfm")
+    project_path = os.path.join(airfm_folder, project_name)
+    project_file_path = os.path.join(project_path, f"{project_name}.afm")
+
+    # Create a dummy project file
+    os.makedirs(project_path, exist_ok=True)
+    with open(project_file_path, 'w') as f:
+        f.write("{}")
+
+    project_controller.open_project(project_file_path)
+
+    # Check if the project data is loaded
+    assert project_controller.current_project_path == project_file_path, "Project path was not set correctly."
+    assert project_controller.current_project_data == {}, "Project data was not loaded correctly."
+
+def test_save_current_project(project_controller):
+    """Test to ensure the current project can be saved."""
+    project_name = "TestProject"
+    documents_folder = os.path.expanduser("~\\Documents")
+    airfm_folder = os.path.join(documents_folder, "Airfm")
+    project_path = os.path.join(airfm_folder, project_name)
+    project_file_path = os.path.join(project_path, f"{project_name}.afm")
+
+    # Create a dummy project
+    os.makedirs(project_path, exist_ok=True)
+    project_controller.current_project_path = project_file_path
+    project_controller.current_project_data = {"test_key": "test_value"}
+
+    project_controller.save_current_project()
+
+    # Check if the project file is saved
+    assert os.path.exists(project_file_path), "Project file was not saved."
+    with open(project_file_path, 'r') as f:
+        data = f.read()
+    assert "test_key" in data, "Project data was not saved correctly."
