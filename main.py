@@ -1,7 +1,13 @@
 import os, sys
 from pathlib import Path
 
-from PySide2.QtCore import Property, QObject, QUrl, Qt, QFile, Signal, Slot
+from PySide2.QtCore import QUrl, QCoreApplication
+
+QCoreApplication.setOrganizationName("Aerohub")
+QCoreApplication.setApplicationName("Airfoil Design Tool")
+QCoreApplication.setApplicationVersion("1.0.0")
+
+
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtQuick import QQuickView
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
@@ -13,9 +19,22 @@ from models.airfoils import Airfoil_new
 from scripts.functions import get_foils_from_dir
 import globals
 from models.controllers import SplashController, ProjectController, MainController, airfoil_listmodel
+from models.recent_projects_model import RecentProjectsModel
 
 from logger_config import logger
-    
+
+# TODO:
+# - Add the database setup to the splash screen
+# - Make the splash screen do some more useful functions, such as creating the necessary databases, components, etc.
+# - Add the ability to select a project from the recent projects list
+# - Setup the database for the recent projects list
+
+# FIXME:
+# - Fix the StandardPaths in the qml
+# - Fix the loading of the main qml file, screens are being muddled up
+# - Fix the connections to the dataModel and airfoilListModel
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     engine = QQmlApplicationEngine()
@@ -25,6 +44,7 @@ if __name__ == "__main__":
     project_controller = ProjectController()
     main_controller = MainController(project_controller=project_controller)
     data_model = Airfoil_new()
+    recent_projects_model = RecentProjectsModel()
 
     # Function to load the project page
     def load_project_page():
@@ -59,6 +79,7 @@ if __name__ == "__main__":
 
     # Load the splash screen
     root_context.setContextProperty("splashController", splash_controller)
+    root_context.setContextProperty("recentProjectsModel", recent_projects_model)
     engine.load(globals.SPLASH_QML_FILE) # SPLASH_QML_FILE or MAIN_QML_FILE
     
     if not engine.rootObjects():

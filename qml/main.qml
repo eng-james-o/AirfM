@@ -174,7 +174,7 @@ Window {
             }
         }
         StackView {
-            id: stackView
+            id: main_stackView
             anchors.fill: parent
             anchors.top: topBar.bottom
             anchors.bottom: parent.bottom
@@ -191,7 +191,41 @@ Window {
             target: projectController
 
             onProjectSelected: {
-                stackView.push(Qt.resolvedUrl("pages/SelectFoilPage_new.qml"));
+                main_stackView.push(Qt.resolvedUrl("pages/2D_FoilPage.qml"));
+            }
+        }
+
+        TabBar {
+            id: tabBar
+            anchors.bottom: parent.bottom
+            width: parent.width
+
+            onCurrentIndexChanged: {
+                swipeView.currentIndex = currentIndex
+            }
+            TabButton {
+                text: "2D Foil"
+            }
+
+            TabButton {
+                text: "3D Foil"
+            }
+        }
+
+        SwipeView {
+            id: swipeView
+            anchors.fill: parent
+            currentIndex: tabBar.currentIndex
+            onCurrentIndexChanged: {
+                tabBar.currentIndex = currentIndex
+            }
+            Foil2DPage {
+                id: foil2DPage
+                anchors.fill: parent
+            }
+            Foil3DPage {
+                id: foil3DPage
+                anchors.fill: parent
             }
         }
     }

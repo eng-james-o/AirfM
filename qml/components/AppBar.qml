@@ -85,6 +85,12 @@ Rectangle{
                         onTriggered: console.log("Open clicked")
                     }
                     Action {
+                        text: "Save"
+                        onTriggered: {
+                            projectController.save_current_project()
+                        }
+                    }
+                    Action {
                         text: "Exit"
                         onTriggered: Qt.quit()
                     }

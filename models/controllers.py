@@ -96,18 +96,27 @@ class ProjectController(QObject):
         return self.current_project_data
 
     @Slot(str)
-    def new_project(self, project_name):
+    def new_project(self, project_name, folder_url):
         """
         Creates a new project stored as a file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
+        Args:
+            project_name (str): The name of the project.
+            folder_url (str): The folder URL where the project should be created.
         """
         try:
-            # Define the default project location
-            documents_folder = os.path.expanduser("~\\Documents")
-            airfm_folder = os.path.join(documents_folder, "Airfm")
-            os.makedirs(airfm_folder, exist_ok=True)
+            # Convert QML file dialog URL (e.g., "file:///C:/Users/...") to a local path
+            if folder_url.startswith("file:///"):
+                folder_path = folder_url[8:] if os.name == "nt" else folder_url[7:]
+            else:
+                folder_path = folder_url
+
+            # # Define the default project location
+            # documents_folder = os.path.expanduser("~\\Documents")
+            # airfm_folder = os.path.join(documents_folder, "Airfm")
+            # os.makedirs(airfm_folder, exist_ok=True)
 
             # Create the project directory
-            project_path = os.path.join(airfm_folder, project_name)
+            project_path = os.path.join(folder_path, project_name)
             os.makedirs(project_path, exist_ok=True)
 
             # Create the exports folder inside the project directory
@@ -125,6 +134,7 @@ class ProjectController(QObject):
             self.save_project(project_file_path)
             self.projectSelected.emit()
             logger.info(f"New project created at {project_file_path}")
+
         except Exception as e:
             logger.error(f"Failed to create new project: {e}")
 
@@ -162,6 +172,7 @@ class ProjectController(QObject):
             logger.info(f"Project saved to {file_path}")
             return True
         except Exception as e:
+            print(f"Failed to save project file: {e}")
             logger.error(f"Failed to save project file: {e}")
             return False
     

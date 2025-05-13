@@ -13,6 +13,7 @@ Item {
 
     ColumnLayout {
         id: sideLayout
+        spacing: 10
 
         //        anchors.bottom: parent.bottom
         //        anchors.bottomMargin: 50
@@ -26,7 +27,8 @@ Item {
 
         TextButton {
             text: "Airfoil Library"
-            Layout.preferredWidth: 100
+            Layout.minimumWidth: 120
+            Layout.preferredWidth: 120
             Layout.preferredHeight: 45
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
@@ -36,7 +38,8 @@ Item {
         }
         TextButton {
             text: "Help"
-            Layout.preferredWidth: 100
+            Layout.minimumWidth: 120
+            Layout.preferredWidth: 120
             Layout.preferredHeight: 45
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
@@ -48,7 +51,7 @@ Item {
 
     ColumnLayout {
         id: mainLayout
-        width: 640
+//        width: 640
         anchors.right: parent.right
         anchors.rightMargin: 50
         anchors.bottom: parent.bottom
@@ -109,53 +112,29 @@ Item {
                 anchors.fill: parent
             }
 
-            model: ListModel {
-                ListElement { name: "Project 1"; location:"C:/Users"; date:"12-16-25" }
-                ListElement { name: "Project 2"; location:"C:/Users"; date:"12-16-25" }
-                ListElement { name: "Project 3"; location:"C:/Users"; date:"12-16-25" }
-            }
+            model: recentProjectsModel
 
             delegate: Item {
                 id: element
                 width: parent.width
                 height: 40
 
-                Rectangle {
-                    id: rectangle
-                    width: parent.width - 20
-                    height: parent.height - 4
-                    color: "#f0f0f0"
-                    border.color: "#cccccc"
-                    radius: 5
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
+                RowLayout {
+                    spacing: 10
 
                     Text {
-                        anchors.left: parent.left
                         text: model.name
-                        anchors.leftMargin: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        font.pixelSize: 18
-                    }
-                    Text {
-                        anchors.centerIn: parent
-                        text: model.location
-                        font.pixelSize: 18
-                    }
-                    Text {
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: model.date
-                        anchors.rightMargin: 10
-                        font.pixelSize: 18
+                        Layout.alignment: Qt.AlignLeft
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            // Logic to open the selected project
-                            console.log("Selected project: " + model.name)
-                        }
+                    Text {
+                        text: model.location
+                        Layout.alignment: Qt.AlignLeft
+                    }
+
+                    Text {
+                        text: model.date
+                        Layout.alignment: Qt.AlignLeft
                     }
                 }
             }
@@ -165,92 +144,92 @@ Item {
         id: openProjectDialog
         title: qsTr("Open Project")
         nameFilters: [ "Airfm project files (*.afm)", "Selig airfoils (*.dat)" ]
-        folder: shortcuts.Documents
+        // folder: shortcuts.Documents
         onSelectionAccepted: {
-            //openProjectDialog.file
+            // Logic to open the selected project
+            console.log("Selected file: " + fileUrl)
+            projectController.open_project(fileUrl)
         }
     }
     Dialog {
         id: newProjectDialog
+        visible: false
         title: qsTr("New Project")
+        width: 300
+        height: 200
 
-        StackView {
-            id: stack
+        Item {
+            id: projectNamePage
             anchors.fill: parent
 
-            initialItem: Page {
-                id: projectNamePage
+            GridLayout {
+                columnSpacing: 5
+                rowSpacing: 5
+                columns: 2
+                //spacing: 10
+                anchors.fill: parent
 
-                ColumnLayout {
-                    spacing: 10
-                    anchors.fill: parent
+                Label {
+                    text: "Enter Project Name"
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pixelSize: 10
+                    font.bold: true
+                }
 
-                    Label {
-                        text: "Enter Project Name"
-                        Layout.alignment: Qt.AlignHCenter
-                    }
+                TextField {
+                    id: projectNameField
+                    placeholderText: "Project Name"
+                    Layout.alignment: Qt.AlignHCenter
+                }
 
-                    TextField {
-                        id: projectNameField
-                        placeholderText: "Project Name"
-                        Layout.alignment: Qt.AlignHCenter
-                    }
+                TextField {
+                    id: projectLocationField
+                    placeholderText: "Project Location"
+                    Layout.alignment: Qt.AlignHCenter
+                }
 
-                    Button {
-                        text: "Next"
-                        Layout.alignment: Qt.AlignHCenter
-                        onClicked: {
-                            if (projectNameField.text.trim() !== "") {
-                                stack.push(projectLocationPage)
-                            } else {
-                                console.log("Project name cannot be empty")
-                            }
+                Button {
+                    text: "Choose Location"
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: locationDialog.open()
+                }
+
+                Button {
+                    text: "Create Project"
+                    Layout.preferredWidth: 100
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: {
+                        if (projectNameField.text.trim() !== "") {
+                            projectController.new_project(projectNameField.text, fileUrl)
+                            newProjectDialog.close()
+                            console.log("Project created at: " + fileUrl)}
+                        else {
+                            console.log("Project name cannot be empty")
                         }
                     }
                 }
             }
+            FileDialog {
+                id: locationDialog
+                title: "Select Project Directory"
+                folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+                selectFolder: true
+                onAccepted: {
+                    // set the projectLocationField text to the selected folder
+                    projectLocationField.text = fileUrl
 
-            Component {
-                id: projectLocationPage
-
-                Page {
-                    id: locationPage
-
-                    ColumnLayout {
-                        spacing: 10
-                        anchors.fill: parent
-
-                        Label {
-                            text: "Select Project Location"
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        FileDialog {
-                            id: locationDialog
-                            title: "Select Project Directory"
-                            folder: shortcuts.Documents
-                            selectFolder: true
-                            onAccepted: {
-                                projectController.new_project(projectNameField.text, fileUrl)
-                                newProjectDialog.close()
-                            }
-                        }
-
-                        Button {
-                            text: "Choose Location"
-                            Layout.alignment: Qt.AlignHCenter
-                            onClicked: locationDialog.open()
-                        }
-
-                        Button {
-                            text: "Back"
-                            Layout.alignment: Qt.AlignHCenter
-                            onClicked: stack.pop()
-                        }
-                    }
                 }
             }
         }
     }
+
+    // Connections {
+    //     target: projectController
+
+    //     onProjectSelected: {
+    //         main_stackView.push(Qt.resolvedUrl("pages/2D_FoilPage.qml"));
+    //     }
+    // }
 }
+
 
