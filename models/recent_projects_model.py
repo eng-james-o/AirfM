@@ -1,6 +1,9 @@
 from PySide2.QtCore import QAbstractListModel, Qt, QModelIndex
 from models.database import ProjectDatabase
 
+# TODO
+# - Delete this file after it has been moved to data.py
+
 class RecentProjectsModel(QAbstractListModel):
     NameRole = Qt.UserRole + 1
     LocationRole = Qt.UserRole + 2

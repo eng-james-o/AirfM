@@ -92,6 +92,9 @@ class Airfoil_new(QObject):
             if not self.NAME and not airfoil_name:
                 # no name has been supplied
                 logger.error("No name has been supplied")
+        
+        # The shape of the internal data structure
+        # self._data = np.vstack((x, y)).T
     
     @Slot(str)
     def load(self, filename:str, plane=None, incidence=None, chord=None, position=None, TE_treatment=None):
@@ -187,13 +190,18 @@ class Airfoil_new(QObject):
         # According to Selig format:
         # - Upper surface data: from the start of the file (trailing edge) to the leading edge.
         # - Lower surface data: from the leading edge to the end of the file (trailing edge).
-        upper_data = data[:i_le+1]
-        lower_data = data[i_le:]
+        upper_data = data[ : i_le+1] # x,y coordinates up to the leading edge
+        lower_data = data[i_le : ]   # x,y coordinates after the leading edge
         
         # Remove a duplicate trailing edge point if it exists.
+        # TODO
+        # - move this implementation into the method close_TE
+        # - ensure that the choice of how the TE is closed depends on the user choice
+        # - such as closing to a point, closing to a vertical line, or blending to a point from a certain distance
+
         # Typically the trailing edge appears as the first point of the upper surface and the last point of the lower surface.
         if np.allclose(upper_data[0], lower_data[-1], atol=1e-6):
-            lower_data = lower_data[:-1]
+            lower_data = lower_data[:-1] #remove the last entry in the lower data
         
         # Reorder the data to match the desired output:
         # For the upper surface: desired order is from leading edge to trailing edge.
@@ -213,8 +221,10 @@ class Airfoil_new(QObject):
         # Add data into the class instance parameters
         self.NAME = name
         self.NUM_POINTS = num_points
-        # self.dataChanged.emit() # this should already be emited by the self._data property definition
         
+        # TODO 
+        # - refractor this code to remove the reversing of the data order multiple times
+        # - also confirm if this second reversal is necessary
         x = np.hstack((x_lower, x_upper[::-1]))
         y = np.hstack((y_lower, y_upper[::-1]))
         self._data = np.vstack((x, y)).T
@@ -319,8 +329,9 @@ class Airfoil_new(QObject):
 
     @Slot()    
     def getData(self):
-        # fix this, since self._data does not exist yet
-        return self._data
+        # self._data is defined in self.load()
+        # The shape of the data: self._data = np.vstack((x, y)).T
+        return self._data # shape: (num_points, 2)
     
     data = Property(np.ndarray, fget=getData, notify=dataChanged)
 

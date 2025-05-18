@@ -25,6 +25,7 @@ import sys
 
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, QModelIndex, Signal, Slot
 from PySide2.QtGui import QStandardItem, QStandardItemModel
+from models.database import ProjectDatabase
 
 # Qt Model classes
 
@@ -94,31 +95,33 @@ Args:
     path (str): The path to the airfoil
 """
                                    
-class ProjectListModel(QAbstractListModel):
+class RecentProjectsModel(QAbstractListModel):
     NameRole = Qt.UserRole + 1
     PathRole = Qt.UserRole + 2
     DateRole = Qt.UserRole + 3
 
-    def __init__(self, parent=None):
+    def __init__(self, db_path="projects.db", parent=None):
         super().__init__(parent)
-        self._data = list()
+        self.db = ProjectDatabase(db_path)
+        # self._data = list()
+        self._projects = self.db.get_projects()
     
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < len(self._data)):
             return None
         
-        item = self._data[index.row()]
+        project = self._projects[index.row()]
 
-        if role == ProjectListModel.PathRole:
-            return item.path
-        elif role == ProjectListModel.NameRole or role == Qt.DisplayRole:
-            return item.name
-        elif role == ProjectListModel.DateRole:
-            return item.date
+        if role == RecentProjectsModel.PathRole:
+            return project[0] # project.path
+        elif role == RecentProjectsModel.NameRole or role == Qt.DisplayRole:
+            return project[1] # project.name
+        elif role == RecentProjectsModel.DateRole:
+            return project[2] # project.date
         return None
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self._data)
+        return len(self._projects)
     
     def roleNames(self) -> Dict:
         roles = {
@@ -130,9 +133,21 @@ class ProjectListModel(QAbstractListModel):
     
     @Slot(str, str)
     def addItem(self, name, path, date):
+        # Add the project to the database
+        self.db.add_project(name, path, date)
+        
+        # Add the project to the model
+        # TODO
+        # - change this implementation to simply refresh the model, instead of adding the item to the model
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._data.append(ProjectListModel(name, path, date))
+        self._projects.append((name, path, date))
         self.endInsertRows()
+    
+    @Slot()
+    def refresh(self):
+        self.beginResetModel()
+        self._projects = self.db.get_projects()
+        self.endResetModel()
 
 ProjectModelItem = createModelItem("ProjectModelItem", ["name", "path", "date"])
 ProjectModelItem.__doc__ = """

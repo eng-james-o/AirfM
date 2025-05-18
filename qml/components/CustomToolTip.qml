@@ -7,9 +7,10 @@ ToolTip{
     visible: parent.hovered
     delay: 500
     timeout: 3000
-    text: qsTr("")
+    text: qsTr("Tooltip text")
     rightPadding: 10
     leftPadding: 10
+
     contentItem: Text{
         text: control.text
         font: control.font
@@ -23,9 +24,3 @@ ToolTip{
         radius: 5
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/

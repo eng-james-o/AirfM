@@ -31,7 +31,7 @@ Button{
         color: internal.dynamicColor
         radius: btnRadius
         anchors.fill: parent
-        anchors.margins: 3
+        anchors.margins: 1
 
         Image {
             // icon on the button

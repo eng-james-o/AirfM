@@ -338,9 +338,12 @@ Item {
         backgroundColor: "white"
         legend.visible: false
         antialiasing: true
+        axes: [myaxisX, myaxisY]
+        //        setAxisX: myaxisX
+        //        setAxisY: myaxisY
 
         function loadChartData() {
-            foil_chart.removeAllSeries()
+            foil_chart.clearChart()
 
             var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
             for (var i = 0; i < dataModel.data.length; ++i) {
@@ -349,9 +352,14 @@ Item {
                 series.append(dataModel.data[i][0], dataModel.data[i][1]);
             }
         }
+        function clearChart() {
+            foil_chart.removeAllSeries()
+        }
 
         Connections {
             target: dataModel
+            // update this name to the new
+            // update the signal, such that the new data is raised with the signal
             function onDataChanged () {
                 console.log('data changed')
                 //console.log(dataModel.data)
@@ -364,113 +372,13 @@ Item {
 
         ValueAxis {
             id:myaxisX
-            min: 0; max: 1
+            min: -0.2; max: 1.2
             tickCount: 11
         }
         ValueAxis {
             id:myaxisY
             min: -0.5; max: 0.5
             tickCount: 11
-        }
-    }
-
-    Dialog {
-        id: newProjectDialog
-        title: qsTr("New Project")
-        // modal: true
-        width: 400
-        height: 300
-        visible: false
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#f0f0f0"
-            radius: 10
-            border.color: "#707070"
-            border.width: 1
-
-            StackView {
-                id: stack
-                anchors.fill: parent
-
-                initialItem: Page {
-                    id: projectNamePage
-
-                    ColumnLayout {
-                        spacing: 10
-                        anchors.fill: parent
-                        anchors.margins: 20
-
-                        Label {
-                            text: "Enter Project Name"
-                            font.pixelSize: 16
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        TextField {
-                            id: projectNameField
-                            placeholderText: "Project Name"
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        RowLayout {
-                            spacing: 10
-                            Layout.alignment: Qt.AlignHCenter
-
-                            Button {
-                                text: "Next"
-                                enabled: projectNameField.text.trim() !== ""
-                                onClicked: {
-                                    stack.push(projectSummaryPage)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Component {
-                    id: projectSummaryPage
-
-                    Page {
-                        id: summaryPage
-
-                        ColumnLayout {
-                            spacing: 10
-                            anchors.fill: parent
-                            anchors.margins: 20
-
-                            Label {
-                                text: "Summary"
-                                font.pixelSize: 16
-                                Layout.alignment: Qt.AlignHCenter
-                            }
-
-                            Text {
-                                text: "Project Name: " + projectNameField.text
-                                Layout.alignment: Qt.AlignHCenter
-                            }
-
-                            RowLayout {
-                                spacing: 10
-                                Layout.alignment: Qt.AlignHCenter
-
-                                Button {
-                                    text: "Previous"
-                                    onClicked: stack.pop()
-                                }
-
-                                Button {
-                                    text: "Done"
-                                    onClicked: {
-                                        projectController.new_project(projectNameField.text)
-                                        newProjectDialog.close()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

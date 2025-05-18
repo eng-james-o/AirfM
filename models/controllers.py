@@ -4,19 +4,18 @@
 # it should call the script to download the foils and save them, if they do not exist
 import json
 from PySide2.QtCore import QObject, Slot, Signal, Property, QThread
-import logging
+from datetime import datetime
 import time
 
 from scripts.functions import get_foils_from_dir
 from models.airfoils import Airfoil_new, AirfoilTransformation
 from globals import AIRFOILS_FOLDER
-from models.data import AirfoilListModel, ProjectListModel
+from models.data import AirfoilListModel, RecentProjectsModel
 import os
 from PySide2.QtWidgets import QFileDialog
 
 # set up logger
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename='log.log', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8', level=logging.INFO)
+from logger_config import logger
 
 airfoil_listmodel = AirfoilListModel()
 
@@ -76,12 +75,18 @@ class SplashController(QObject):
 
 class ProjectController(QObject):
     """
-    This class handles the project data, including loading and saving projects, and managing airfoils and transformations."""
+    This class handles the project data, including loading and saving a project, and managing airfoils and transformations within the project.
+    """
     current_project_path = None
     current_project_data = None
     projectSelected = Signal()  # Signal emitted when a project is selected or created
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, recent_projects_model=None):
+        """
+        Args:
+            parent (QObject): Parent object for this controller.
+            recent_projects_model (RecentProjectsModel): Model for recent projects.
+        """
         super(ProjectController, self).__init__(parent)
         self.current_project_data = {
             "airfoils": [],
@@ -94,6 +99,23 @@ class ProjectController(QObject):
         Returns the current project data.
         """
         return self.current_project_data
+
+    def add_to_recent_projects(self, name, path, date=None):
+        """
+        Adds the accessed project to the RecentProjectsModel's database.
+        """
+        if date is None:
+            date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Use a singleton or global instance if available, else create a temp one
+        try:
+            if hasattr(self, 'recent_projects_model'):
+                model = self.recent_projects_model
+            else:
+                model = RecentProjectsModel()
+                self.recent_projects_model = model
+            model.addItem(name, path, date)
+        except Exception as e:
+            logger.error(f"Failed to add project to recent projects: {e}")
 
     @Slot(str)
     def new_project(self, project_name, folder_url):
@@ -118,7 +140,7 @@ class ProjectController(QObject):
             # Create the project directory
             project_path = os.path.join(folder_path, project_name)
             os.makedirs(project_path, exist_ok=True)
-
+            
             # Create the exports folder inside the project directory
             exports_path = os.path.join(project_path, "exports")
             os.makedirs(exports_path, exist_ok=True)
@@ -132,6 +154,8 @@ class ProjectController(QObject):
                 "derived_airfoils": []
             }
             self.save_project(project_file_path)
+            # Add to recent projects
+            self.add_to_recent_projects(project_name, project_file_path)
             self.projectSelected.emit()
             logger.info(f"New project created at {project_file_path}")
 
@@ -147,6 +171,10 @@ class ProjectController(QObject):
             with open(project_file_path, 'r') as project_file:
                 self.current_project_data = json.load(project_file)
             self.current_project_path = project_file_path
+
+            # Add to recent projects
+            project_name = os.path.splitext(os.path.basename(project_file_path))[0]
+            self.add_to_recent_projects(project_name, project_file_path)
             self.projectSelected.emit()
             logger.info(f"Project opened from {project_file_path}")
         except Exception as e:

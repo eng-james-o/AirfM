@@ -7,20 +7,18 @@ QCoreApplication.setOrganizationName("Aerohub")
 QCoreApplication.setApplicationName("Airfoil Design Tool")
 QCoreApplication.setApplicationVersion("1.0.0")
 
-
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtQuick import QQuickView
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide2.QtCharts import QtCharts
 from PySide2.QtWidgets import QApplication, QMainWindow 
 
-from models.data import AirfoilListModel
+from models.data import AirfoilListModel, RecentProjectsModel
 from models.airfoils import Airfoil_new
-from scripts.functions import get_foils_from_dir
-import globals
 from models.controllers import SplashController, ProjectController, MainController, airfoil_listmodel
-from models.recent_projects_model import RecentProjectsModel
+from scripts.functions import get_foils_from_dir
 
+import globals
 from logger_config import logger
 
 # TODO:
@@ -33,6 +31,7 @@ from logger_config import logger
 # - Fix the StandardPaths in the qml
 # - Fix the loading of the main qml file, screens are being muddled up
 # - Fix the connections to the dataModel and airfoilListModel
+# - The appbar button tips and hover effects only work on the upper part of the buttons
 
 
 if __name__ == "__main__":
@@ -41,10 +40,10 @@ if __name__ == "__main__":
     root_context = engine.rootContext()
 
     splash_controller = SplashController()
-    project_controller = ProjectController()
-    main_controller = MainController(project_controller=project_controller)
     data_model = Airfoil_new()
     recent_projects_model = RecentProjectsModel()
+    project_controller = ProjectController(recent_projects_model=recent_projects_model)
+    main_controller = MainController(project_controller=project_controller)
 
     # Function to load the project page
     def load_project_page():
@@ -55,9 +54,6 @@ if __name__ == "__main__":
             engine.load(QUrl.fromLocalFile(os.path.join(globals.MAIN_QML_FILE)))
             splash_screen = engine.rootObjects()[0]
             splash_screen.deleteLater()
-            
-            # main_window = engine.rootObjects()[0]
-            # main_window.setProperty("currentPage", "SelectFoilPage_new.qml")
         except Exception as e:
             logger.critical(f"Failed to load project page: {e}")
     
@@ -67,11 +63,6 @@ if __name__ == "__main__":
         engine.clearComponentCache()
         root_context.setContextProperty("dataModel", data_model)
         root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
-        # root_context.setContextProperty("projectController", project_controller)
-        # try:
-        #     engine.load(globals.MAIN_QML_FILE)
-        # except Exception as e:
-        #     logger.critical(f"Failed to load main application page: {e}")
 
     # Connect signals for transitions
     splash_controller.loadingComplete.connect(load_project_page)
