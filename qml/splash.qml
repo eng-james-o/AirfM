@@ -68,7 +68,7 @@ Window {
         padding: 1
         anchors.horizontalCenter: parent.horizontalCenter
         value: 0
-        from: 0; to: 1542
+        from: 0; to: 3
 
         Behavior on value {
             NumberAnimation {

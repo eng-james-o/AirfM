@@ -158,3 +158,66 @@ Args:
     path (str): The path to the project
     date (str): The date the project was last modified
 """
+
+class AirfoilActionModel(QAbstractListModel):
+    """This List model contains the transformations done on multiple airfoils, each with an id, name, and a list of transformations."""
+    IdRole = Qt.UserRole + 1
+    NameRole = Qt.UserRole + 2
+    TransformationsRole = Qt.UserRole + 3
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._data = []  # Each item: {'id': int, 'name': str, 'transformations': list}
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid() or not (0 <= index.row() < len(self._data)):
+            return None
+        item = self._data[index.row()]
+        if role == AirfoilActionModel.IdRole:
+            return item['id']
+        elif role == AirfoilActionModel.NameRole:
+            return item['name']
+        elif role == AirfoilActionModel.TransformationsRole:
+            return item['transformations']
+        return None
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self._data)
+
+    def roleNames(self) -> Dict:
+        return {
+            AirfoilActionModel.IdRole: b"id",
+            AirfoilActionModel.NameRole: b"name",
+            AirfoilActionModel.TransformationsRole: b"transformations"
+        }
+
+    @Slot(int, str, list)
+    def addAirfoil(self, airfoil_id, name, transformations):
+        self.beginInsertRows(QModelIndex(), len(self._data), len(self._data))
+        self._data.append({'id': airfoil_id, 'name': name, 'transformations': transformations})
+        self.endInsertRows()
+
+    @Slot(int, str, object)
+    def addTransformation(self, airfoil_id, transformation_type, parameters):
+        for item in self._data:
+            if item['id'] == airfoil_id:
+                item['transformations'].append({'type': transformation_type, 'parameters': parameters})
+                self.dataChanged.emit(self.index(self._data.index(item)), self.index(self._data.index(item)))
+                break
+
+    @Slot(int)
+    def removeAirfoil(self, airfoil_id):
+        for i, item in enumerate(self._data):
+            if item['id'] == airfoil_id:
+                self.beginRemoveRows(QModelIndex(), i, i)
+                self._data.pop(i)
+                self.endRemoveRows()
+                break
+
+    @Slot(int)
+    def clearTransformations(self, airfoil_id):
+        for item in self._data:
+            if item['id'] == airfoil_id:
+                item['transformations'] = []
+                self.dataChanged.emit(self.index(self._data.index(item)), self.index(self._data.index(item)))
+                break

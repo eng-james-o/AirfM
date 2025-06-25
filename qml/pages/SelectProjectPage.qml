@@ -16,6 +16,7 @@ Item {
 
     ColumnLayout {
         id: sideLayout
+        anchors.rightMargin: 30
         spacing: 10
 
         //        anchors.bottom: parent.bottom
@@ -54,9 +55,10 @@ Item {
 
     ColumnLayout {
         id: mainLayout
+        width: 600
         //        width: 640
         anchors.right: parent.right
-        anchors.rightMargin: 50
+        anchors.rightMargin: 30
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
         anchors.top: parent.top
@@ -159,8 +161,13 @@ Item {
         visible: false
         title: qsTr("New Project")
         modal: true
-//        width: contentItem.width + 15
-//        height: contentItem.height + footer.height + 15
+
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+
+        width: newProjectDialogContent.width + 10 //contentItem.width + 15
+        height: newProjectDialogContent.height + footer.height + 10 //contentItem.height + header.height + footer.height + 15
+        dim: true
 
         footer: DialogButtonBox {
             id: buttonBox
@@ -188,15 +195,15 @@ Item {
             }
         }
         background: Rectangle {
-            color: "#909090"
+            color: "#9296a0"
             radius: 10
             anchors.fill: newProjectDialog
         }
 
-        contentItem: Item {
+        Item {
             id: newProjectDialogContent
             //            anchors.fill: parent
-            implicitWidth: 400
+            implicitWidth: 550
             implicitHeight: 300
 
             Label {
@@ -259,6 +266,7 @@ Item {
             }
             TextArea {
                 id: projectSummaryField
+                height: 60
                 anchors.left: projectSummaryLabel.right
                 anchors.top: projectLocationField.bottom
                 anchors.right: parent.right

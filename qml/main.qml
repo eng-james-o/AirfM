@@ -191,7 +191,7 @@ Window {
             target: projectController
 
             onProjectSelected: {
-                main_stackView.push(Qt.resolvedUrl("pages/FoilMainPage.qml"));
+                main_stackView.push(Qt.resolvedUrl("pages/MainPage.qml"));
             }
         }
     }

@@ -10,7 +10,7 @@ import time
 from scripts.functions import get_foils_from_dir
 from models.airfoils import Airfoil_new, AirfoilTransformation
 from globals import AIRFOILS_FOLDER
-from models.data import AirfoilListModel, RecentProjectsModel
+from models.data import AirfoilListModel, RecentProjectsModel, AirfoilActionModel
 import os
 from PySide2.QtWidgets import QFileDialog
 
@@ -23,23 +23,24 @@ class LoaderThread(QThread):
     loadingProgress = Signal(int, str)
     loadingComplete = Signal()
     step_number = 0
+    steps = list()
 
     def run(self):
         # step 1: initialise
-        step = "Initialisation"
-        self.process_step(1, step)
+        self.steps.append("Initialisation")
+        self.process_step(1, self.steps[-1])
 
         # step 2: read airfoils
         airfoils = get_foils_from_dir(AIRFOILS_FOLDER)
         logger.info(f"{len(airfoils)} airfoils")
+        self.steps.append(f"Load airfoils")
+        self.process_step(1, self.steps[-1])
         for filename, filepath in airfoils:
             airfoil_listmodel.addItem(filename, filepath)
-            step = f"Load {filename} airfoil"
-            self.process_step(1, step)
 
         # step 3: load main qml
-        step = "Load main QML"
-        self.process_step(1, step)
+        self.steps.append("Load main QML")
+        self.process_step(1, self.steps[-1])
         time.sleep(0.5) # small delay to ensure that the progressbar reaches the end before the splash screen closes
         self.completed = True
 
@@ -47,7 +48,9 @@ class LoaderThread(QThread):
     
     def process_step(self, level:int, step:str):
         self.step_number += 1
-        time.sleep(0.01) # small delay to ensure that the UI has time to update before the next value is sent
+
+        # small delay to ensure that the UI has time to update visibly before the next value is sent
+        time.sleep(0.1) 
         logger.log(level=level, msg=step)
         self.loadingProgress.emit(self.step_number, step)
 
@@ -93,6 +96,7 @@ class ProjectController(QObject):
             "transformations": [],
             "derived_airfoils": []
         }
+        self.airfoil_action_model = AirfoilActionModel()
     
     def get_project_data(self):
         """
@@ -117,7 +121,7 @@ class ProjectController(QObject):
         except Exception as e:
             logger.error(f"Failed to add project to recent projects: {e}")
 
-    @Slot(str)
+    @Slot(str, str)
     def new_project(self, project_name, folder_url):
         """
         Creates a new project stored as a file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
@@ -125,6 +129,7 @@ class ProjectController(QObject):
             project_name (str): The name of the project.
             folder_url (str): The folder URL where the project should be created.
         """
+        print(f"Create new project called: Name: {project_name} Location: {folder_url}")
         try:
             # Convert QML file dialog URL (e.g., "file:///C:/Users/...") to a local path
             if folder_url.startswith("file:///"):
@@ -167,6 +172,9 @@ class ProjectController(QObject):
         """
         Opens an existing project file with .afm extension. This file stores the airfoils, the list of transformations done on them, and the list of airfoils that are derived from them.
         """
+        if project_file_path.startswith("file:///"):
+            # Convert QML file dialog URL (e.g., "file:///C:/Users/...") to a local path
+            project_file_path = project_file_path[8:] if os.name == "nt" else project_file_path[7:]
         try:
             with open(project_file_path, 'r') as project_file:
                 self.current_project_data = json.load(project_file)
@@ -212,26 +220,48 @@ class ProjectController(QObject):
         self.projectSelected.emit()
         logger.info(f"Project selected: {project_path}")
 
-    @Slot(str, str)
-    def add_airfoil(self, name, path):
+    @Slot(int, str)
+    def add_airfoil(self, airfoil_id, name):
+        """Add an airfoil to the project and AirfoilActionModel."""
         if self.current_project_data:
-            self.current_project_data["airfoils"].append({"name": name, "path": path})
-            logger.info(f"Airfoil {name} added to the project")
+            self.current_project_data["airfoils"].append({"id": airfoil_id, "name": name})
+            self.airfoil_action_model.addAirfoil(airfoil_id, name, [])
+            logger.info(f"Airfoil {name} (id={airfoil_id}) added to the project")
         else:
             logger.warning("Cannot add airfoil. No project opened.")
 
-    @Slot(str, str, object)
-    def add_transformation(self, airfoil_name, transformation_type, parameters):
+    @Slot(int, str, object)
+    def add_transformation(self, airfoil_id, transformation_type, parameters):
+        """Add a transformation to a specific airfoil in AirfoilActionModel and project data."""
         if self.current_project_data:
-            transformation = {
-                "airfoil_name": airfoil_name,
+            # Add to AirfoilActionModel
+            self.airfoil_action_model.addTransformation(airfoil_id, transformation_type, parameters)
+            # Add to project data (for persistence)
+            self.current_project_data["transformations"].append({
+                "airfoil_id": airfoil_id,
                 "type": transformation_type,
-                "parameters": parameters.toVariant()  # Convert QVariant to Python object
-            }
-            self.current_project_data["transformations"].append(transformation)
-            logger.info(f"Transformation {transformation_type} added to {airfoil_name}")
+                "parameters": parameters
+            })
+            logger.info(f"Transformation {transformation_type} added to airfoil id={airfoil_id}")
         else:
             logger.warning("Cannot add transformation. No project opened.")
+
+    @Slot(int)
+    def remove_airfoil(self, airfoil_id):
+        """Remove an airfoil and its transformations from the project and AirfoilActionModel."""
+        # Remove from AirfoilActionModel
+        self.airfoil_action_model.removeAirfoil(airfoil_id)
+        # Remove from project data
+        self.current_project_data["airfoils"] = [a for a in self.current_project_data["airfoils"] if a["id"] != airfoil_id]
+        self.current_project_data["transformations"] = [t for t in self.current_project_data["transformations"] if t.get("airfoil_id") != airfoil_id]
+        logger.info(f"Airfoil id={airfoil_id} removed from project")
+
+    @Slot(int)
+    def clear_transformations(self, airfoil_id):
+        """Clear all transformations for a specific airfoil in AirfoilActionModel and project data."""
+        self.airfoil_action_model.clearTransformations(airfoil_id)
+        self.current_project_data["transformations"] = [t for t in self.current_project_data["transformations"] if t.get("airfoil_id") != airfoil_id]
+        logger.info(f"Transformations cleared for airfoil id={airfoil_id}")
 
 class MainController(QObject):
     """

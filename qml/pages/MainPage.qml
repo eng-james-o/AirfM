@@ -10,7 +10,7 @@ Item {
     implicitHeight: 625
     implicitWidth: 880
     id: content_page
-    property int spacing: 12
+    property int spacing: 6
 
     Rectangle {
         id: addContainer
@@ -22,29 +22,32 @@ Item {
         color: "#e3e3e3"
         border.color: "#33334c"
         //        width: 320
-        height: 70
+        height: 80
 
         Label {
             text: "Add airfoil"
-            anchors.topMargin: 4
-            anchors.left: parent.left
+            font.pointSize: 6
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: 5
             anchors.top: parent.top
-            anchors.leftMargin: content_page.spacing
         }
 
         RowLayout {
-            spacing: 5
-            anchors.fill: parent
-            anchors.margins: 10
+            anchors.topMargin: 15
+            anchors.rightMargin: content_page.spacing
+            anchors.leftMargin: content_page.spacing
+            anchors.top:parent.top
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            spacing: 8
+
 
             CustomComboBox {
                 id: select_foilCombobox
-                Layout.preferredHeight: 30
-                Layout.minimumHeight: 30
-
-//                anchors.left: parent.left
-//                anchors.bottom: parent.bottom
-//                anchors.margins: content_page.spacing
+                Layout.fillWidth: true
+                Layout.minimumWidth: 120
+                Layout.minimumHeight: 40
 
                 onCurrentValueChanged: {
                     dataModel.load(select_foilCombobox.currentValue)
@@ -54,15 +57,16 @@ Item {
             TextButton {
                 id: openButton
                 text: qsTr("Open")
-                Layout.minimumWidth: 50
-                Layout.minimumHeight: 30
+//                Layout.minimumWidth: 60
+                Layout.minimumHeight: 40
                 colorDefault: "white"
             }
             TextButton {
                 id: duplicateButton
                 text: qsTr("Duplicate")
-                Layout.minimumHeight: 30
-                Layout.minimumWidth: 80
+//                Layout.fillWidth: true
+                Layout.minimumHeight: 40
+//                Layout.minimumWidth: 80
 
                 colorDefault: "white"
             }
@@ -77,33 +81,33 @@ Item {
         anchors.margins: 10
         color: "#e3e3e3"
         border.color: "#33334c"
-        width: 310
-        height: 70
+        width: 0.5 * parent.width
+        height: 80
 
         Label {
             text: "Transform"
-            anchors.topMargin: 4
-            anchors.left: parent.left
+            font.pointSize: 6
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: 5
             anchors.top: parent.top
-            anchors.leftMargin: content_page.spacing
         }
 
         RowLayout {
-            spacing: 5
-            anchors.fill: parent
-            anchors.margins: 10
+            anchors.topMargin: 15
+            anchors.rightMargin: content_page.spacing
+            anchors.leftMargin: content_page.spacing
+            anchors.top:parent.top
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            spacing: 8
 
             TextButton {
                 id: translateButton
                 text: qsTr("Translate")
-                Layout.minimumWidth: 80
-                Layout.minimumHeight: 30
-//                anchors.bottomMargin: 6
-                width: 75
-                height: 30
-//                anchors.bottom: parent.bottom
-//                anchors.left: parent.left
-//                anchors.margins: content_page.spacing
+                Layout.fillWidth: true
+//                Layout.minimumWidth: 80
+                Layout.minimumHeight: 40
                 colorDefault: "white"
                 onClicked: {
                     translateDialog.open()
@@ -113,12 +117,9 @@ Item {
                 id: scaleButton
                 height: 30
                 text: qsTr("Scale")
+                Layout.fillWidth: true
                 Layout.minimumWidth: 50
-                Layout.minimumHeight: 30
-//                anchors.bottomMargin: 6
-//                anchors.bottom: parent.bottom
-//                anchors.left: translateButton.right
-//                anchors.margins: content_page.spacing
+                Layout.minimumHeight: 40
                 colorDefault: "white"
             }
             TextButton {
@@ -126,24 +127,18 @@ Item {
                 width: 60
                 height: 30
                 text: qsTr("Rotate")
+                Layout.fillWidth: true
                 Layout.minimumWidth: 60
-                Layout.minimumHeight: 30
-//                anchors.bottomMargin: 6
-//                anchors.bottom: parent.bottom
-//                anchors.left: scaleButton.right
-//                anchors.margins: content_page.spacing
+                Layout.minimumHeight: 40
                 colorDefault: "white"
             }
             TextButton {
                 id: flipButton
                 height: 30
                 text: qsTr("Flip")
+                Layout.fillWidth: true
                 Layout.minimumWidth: 50
-                Layout.minimumHeight: 30
-//                anchors.bottomMargin: 6
-//                anchors.bottom: parent.bottom
-//                anchors.left: rotateButton.right
-//                anchors.margins: content_page.spacing
+                Layout.minimumHeight: 40
                 colorDefault: "white"
             }
 
@@ -217,7 +212,7 @@ Item {
                 id: rectangle
 
                 width: actionList.width - 5 // actionList.childrenRect.width //actionList.contentItem.width
-                height: sectiontext.height + 10
+                height: sectiontext.height + 15
 
                 Rectangle {
                     id: action_child
@@ -338,7 +333,7 @@ Item {
         backgroundColor: "white"
         legend.visible: false
         antialiasing: true
-        axes: [myaxisX, myaxisY]
+        //        axes: [myaxisX, myaxisY]
         //        setAxisX: myaxisX
         //        setAxisY: myaxisY
 
@@ -382,9 +377,3 @@ Item {
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/

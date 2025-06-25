@@ -79,6 +79,7 @@ Thumbs.db
 
 # virtual environment
 .venv
+.qtcreator
 
 # vs code settings
 .vscode/
@@ -95,5 +96,12 @@ __pycache__
 data/coord_seligFmt
 airfoils/airfoil_archive
 
-# experiments
-# *.ipynb
+# test directory
+tests/
+
+# word documents
+*.doc
+*.docx
+
+# database files
+projects.db

@@ -13,10 +13,9 @@ Button {
     property color borderColor: textColor
 
     text: qsTr("Button")
-    width: 50
-    implicitWidth: 50
-    height: 25
-    implicitHeight: 25
+    font.pointSize: 8
+    implicitWidth: name.width + 20
+    implicitHeight: name.height + 10
 
     QtObject{
         id: internal
@@ -34,6 +33,7 @@ Button {
         Text {
             id: name
             text: button.text
+
             font: button.font
             color: textColor
             anchors.centerIn: parent
