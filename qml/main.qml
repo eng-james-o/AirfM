@@ -175,6 +175,7 @@ Window {
         }
         StackView {
             id: main_stackView
+            objectName: "main_stackView"
             anchors.fill: parent
             anchors.top: topBar.bottom
             anchors.bottom: parent.bottom
@@ -191,7 +192,7 @@ Window {
             target: projectController
 
             onProjectSelected: {
-                main_stackView.push(Qt.resolvedUrl("pages/MainPage.qml"));
+                main_stackView.push(Qt.resolvedUrl("pages/ProjectWorkspacePage.qml"));
             }
         }
     }

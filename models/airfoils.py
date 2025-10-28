@@ -8,6 +8,8 @@ Classes:
 """
 # This Python file uses the following encoding: utf-8
 
+from __future__ import annotations
+
 # from typing import Dict
 import numpy as np
 from scipy.interpolate import interp1d
@@ -80,9 +82,10 @@ class Airfoil_new(QObject):
         """
         self.NAME = None
         super().__init__(parent)
-        self.LOADED = False 
+        self.LOADED = False
         # becomes true if data is in the airfoil
         # and false if it is empty, either upon initialisatoin, or reset
+        self._data: list[list[float]] = []
 
         if airfoil_path:
             # if path to airfoil data is given
@@ -222,12 +225,14 @@ class Airfoil_new(QObject):
         self.NAME = name
         self.NUM_POINTS = num_points
         
-        # TODO 
+        # TODO
         # - refractor this code to remove the reversing of the data order multiple times
         # - also confirm if this second reversal is necessary
-        x = np.hstack((x_lower, x_upper[::-1]))
-        y = np.hstack((y_lower, y_upper[::-1]))
-        self._data = np.vstack((x, y)).T
+        self.UPPER_X = x_upper
+        self.UPPER_Y = y_upper
+        self.LOWER_X = x_lower
+        self.LOWER_Y = y_lower
+        self._update_qml_data()
 
         if plane or incidence or chord or position or TE_treatment:
             self.initialise_foil(plane=plane, incidence=incidence, chord=chord, position=position, TE_treatment=TE_treatment)
@@ -258,9 +263,8 @@ class Airfoil_new(QObject):
             # translate foil to desired position
         if position:
             self.UPPER_X, self.UPPER_Y, self.LOWER_X, self.LOWER_Y = self.translate_to(*position)
-            
-        # self.X, self.Y = self.order_points()
-        # self.Z = np.zeros_like(self.X)
+
+        self._update_qml_data()
 
     def calculate_quarter_chord(self):
         """
@@ -300,7 +304,7 @@ class Airfoil_new(QObject):
         """
         Order the airfoil coordinates such that the data goes from LE over the upper surface to TE and then back to LE over the lower surface.
 
-        Returns: 
+        Returns:
             tuple: X, Y - X coordinates and Y coordinates of the foil from LE to TE and back to LE
         """
         # check if the data is in the correct order.
@@ -327,13 +331,19 @@ class Airfoil_new(QObject):
 
         return X, Y
 
-    @Slot()    
+    @Slot()
     def getData(self):
         # self._data is defined in self.load()
         # The shape of the data: self._data = np.vstack((x, y)).T
-        return self._data # shape: (num_points, 2)
-    
-    data = Property(np.ndarray, fget=getData, notify=dataChanged)
+        return self._data
+
+    def _update_qml_data(self):
+        X, Y = self.order_points()
+        combined = np.vstack((X, Y)).T
+        self._data = [[float(x), float(y)] for x, y in combined]
+        self.dataChanged.emit()
+
+    data = Property('QVariantList', fget=getData, notify=dataChanged)
 
     def scale_to(self, chord:float)->tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """

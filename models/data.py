@@ -26,6 +26,7 @@ import sys
 from PySide2.QtCore import Property, QAbstractListModel, QObject, Qt, QModelIndex, Signal, Slot
 from PySide2.QtGui import QStandardItem, QStandardItemModel
 from models.database import ProjectDatabase
+from scripts.functions import get_foils_from_dir
 
 # Qt Model classes
 
@@ -59,12 +60,31 @@ class AirfoilListModel(QAbstractListModel):
             AirfoilListModel.NameRole: b"name"
             }
         return roles
-    
+
     @Slot(str, str)
     def addItem(self, name, path):
         self.beginInsertRows(QModelIndex(), len(self._data), len(self._data))
         self._data.append(AirfoilModelItem(name, path))
         self.endInsertRows()
+
+    @Slot()
+    def clear(self):
+        """Remove all airfoils from the model."""
+
+        if not self._data:
+            return
+        self.beginResetModel()
+        self._data = []
+        self.endResetModel()
+
+    @Slot(str)
+    def loadFromDirectory(self, directory):
+        """Populate the model with airfoils discovered in ``directory``."""
+
+        airfoils = get_foils_from_dir(directory)
+        self.beginResetModel()
+        self._data = [AirfoilModelItem(name, path) for name, path in airfoils]
+        self.endResetModel()
 
 def createModelItem(name, required_attrs):
     """
@@ -221,3 +241,13 @@ class AirfoilActionModel(QAbstractListModel):
                 item['transformations'] = []
                 self.dataChanged.emit(self.index(self._data.index(item)), self.index(self._data.index(item)))
                 break
+
+    @Slot()
+    def clear(self):
+        """Remove all airfoil entries."""
+
+        if not self._data:
+            return
+        self.beginResetModel()
+        self._data = []
+        self.endResetModel()

@@ -11,6 +11,8 @@ Item {
     id: selectProjectPage
     implicitHeight: 625
     implicitWidth: 880
+    objectName: "selectProjectPage"
+    property string libraryStatus: ""
     //    width: parent.width
     //    height: parent.height
 
@@ -36,9 +38,32 @@ Item {
             Layout.preferredHeight: 45
             Layout.alignment: Qt.AlignHCenter
             onClicked: {
-                // Logic to show airfoil library
-                console.log("Show airfoil library")
+                if (StackView.view) {
+                    StackView.view.push(Qt.resolvedUrl("AirfoilLibraryPage.qml"))
+                }
             }
+        }
+        TextButton {
+            text: "Refresh Library"
+            Layout.minimumWidth: 120
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 45
+            Layout.alignment: Qt.AlignHCenter
+            onClicked: {
+                const summary = projectController.refresh_airfoil_library()
+                if (summary.errors.length > 0) {
+                    libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped + ", errors: " + summary.errors.join(", ")
+                } else {
+                    libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped
+                }
+            }
+        }
+        Text {
+            text: libraryStatus
+            wrapMode: Text.WordWrap
+            Layout.alignment: Qt.AlignHCenter
+            Layout.maximumWidth: 160
+            color: libraryStatus.indexOf("errors:") >= 0 ? "#ff6666" : "#21be2b"
         }
         TextButton {
             text: "Help"

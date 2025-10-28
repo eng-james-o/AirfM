@@ -324,6 +324,7 @@ Item {
 
     ChartView {
         id: foil_chart
+        objectName: "foil_chart"
         anchors.top: addContainer.bottom
         anchors.left: actionList.right
         anchors.right: parent.right
@@ -341,10 +342,12 @@ Item {
             foil_chart.clearChart()
 
             var series = foil_chart.createSeries(LineSeries, "Data Plot", myaxisX, myaxisY);
-            for (var i = 0; i < dataModel.data.length; ++i) {
-                console.log(i);
-                //console.log(dataModel.data[i][0], dataModel.data[i][1]);
-                series.append(dataModel.data[i][0], dataModel.data[i][1]);
+            var points = dataModel.data || []
+            for (var i = 0; i < points.length; ++i) {
+                var point = points[i]
+                if (!point || point.length < 2)
+                    continue
+                series.append(point[0], point[1]);
             }
         }
         function clearChart() {

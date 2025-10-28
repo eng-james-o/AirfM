@@ -61,8 +61,10 @@ if __name__ == "__main__":
     def load_main_page():
         logger.info("Project page complete")
         engine.clearComponentCache()
+        root_context.setContextProperty("projectController", project_controller)
         root_context.setContextProperty("dataModel", data_model)
         root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
+        root_context.setContextProperty("airfoilActionModel", project_controller.airfoil_action_model)
 
     # Connect signals for transitions
     splash_controller.loadingComplete.connect(load_project_page)

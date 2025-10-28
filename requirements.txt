@@ -1,0 +1,7 @@
+PySide2>=5.15.2
+numpy>=1.21
+scipy>=1.7
+matplotlib>=3.5
+beautifulsoup4>=4.12
+lxml>=4.9
+pytest>=7.0
