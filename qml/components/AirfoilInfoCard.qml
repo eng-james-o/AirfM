@@ -2,12 +2,18 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 
+// To display information about an airfoil
+// TODO: Add preview of airfoil shape
+// TODO: Add more detailed info (e.g., coordinates, properties)
+
 Frame {
     id: root
     property string title: ""
     property string subtitle: ""
     property string description: ""
     property url fileUrl: ""
+    width: 400
+    height: 300
 
     background: Rectangle {
         radius: 12
@@ -36,6 +42,7 @@ Frame {
         Label {
             text: description
             wrapMode: Text.Wrap
+            font.pixelSize: 16
             color: "#2d3748"
             Layout.fillWidth: true
         }

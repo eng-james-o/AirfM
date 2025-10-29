@@ -66,6 +66,7 @@ Item {
             ScrollView {
                 anchors.fill: parent
                 anchors.margins: 12
+                clip: true
 
                 ColumnLayout {
                     id: listColumn

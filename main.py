@@ -5,7 +5,7 @@ from PySide2.QtCore import QUrl, QCoreApplication
 
 QCoreApplication.setOrganizationName("Aerohub")
 QCoreApplication.setApplicationName("Airfoil Design Tool")
-QCoreApplication.setApplicationVersion("1.0.0")
+QCoreApplication.setApplicationVersion("0.1.0")
 
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtQuick import QQuickView
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         engine.clearComponentCache()
         root_context.setContextProperty("projectController", project_controller)
         try:
-            engine.load(QUrl.fromLocalFile(os.path.join(globals.MAIN_QML_FILE)))
+            engine.load(QUrl.fromLocalFile(os.path.join(globals.APP_SHELL_QML_FILE)))
             splash_screen = engine.rootObjects()[0]
             splash_screen.deleteLater()
         except Exception as e:
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # Load the splash screen
     root_context.setContextProperty("splashController", splash_controller)
     root_context.setContextProperty("recentProjectsModel", recent_projects_model)
-    engine.load(globals.SPLASH_QML_FILE) # SPLASH_QML_FILE or MAIN_QML_FILE
+    engine.load(globals.SPLASH_QML_FILE) # SPLASH_QML_FILE or APP_SHELL_QML_FILE
     
     if not engine.rootObjects():
         sys.exit(-1)

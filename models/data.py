@@ -30,10 +30,14 @@ from scripts.functions import get_foils_from_dir
 
 # Qt Model classes
 
+# TODO: Add description (who used the airfoil and where or general properties) and other metadata to the airfoil model (e.g. camber, thickness, etc.) and display it in the airfoil info card
 class AirfoilListModel(QAbstractListModel):
     """This List model contains the available airfoils, name and path"""
     PathRole = Qt.UserRole + 1
     NameRole = Qt.UserRole + 2
+    DescriptionRole = Qt.UserRole + 3
+    CamberRole = Qt.UserRole + 4
+    ThicknessRole = Qt.UserRole + 5
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -49,6 +53,12 @@ class AirfoilListModel(QAbstractListModel):
             return item.path
         elif role == AirfoilListModel.NameRole or role == Qt.DisplayRole:
             return item.name
+        # elif role == AirfoilListModel.DescriptionRole:
+        #     return item.description
+        # elif role == AirfoilListModel.CamberRole:
+        #     return item.camber
+        # elif role == AirfoilListModel.ThicknessRole:
+        #     return item.thickness
         return None
 
     def rowCount(self, parent=QModelIndex()):

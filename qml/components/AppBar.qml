@@ -4,6 +4,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 
 Rectangle{
+    property var navigationStack: null
     property int appBarRadius: 10
     property color appBarbg: "#33334c"
 
@@ -28,9 +29,29 @@ Rectangle{
         anchors.margins: 5
         color: appBarbg
 
+        ToolButton {
+            id: navigationBackButton
+            anchors.left: parent.left
+            anchors.leftMargin: 6
+            anchors.verticalCenter: parent.verticalCenter
+            width: 36
+            height: 36
+            enabled: navigationStack && navigationStack.depth > 1
+            opacity: enabled ? 1 : 0.4
+            icon.source: "../../assets/svg_images/arrow_left_menu.svg"
+            icon.width: 20
+            icon.height: 20
+            background: Rectangle { visible: false }
+            onClicked: {
+                if (navigationStack && navigationStack.depth > 1) {
+                    navigationStack.pop()
+                }
+            }
+        }
+
         Image {
             id: app_icon
-            anchors.left: parent.left
+            anchors.left: navigationBackButton.right
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             source: "../../assets/svg_images/airfoil.svg"

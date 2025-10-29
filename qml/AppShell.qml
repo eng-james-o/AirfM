@@ -106,6 +106,7 @@ Window {
             anchors.right: frame.right
             anchors.margins: 5
             appBarRadius: 15
+            navigationStack: main_stackView
         }
 
         MouseArea {
@@ -173,10 +174,11 @@ Window {
                                  }
             }
         }
+
         StackView {
             id: main_stackView
             objectName: "main_stackView"
-            anchors.fill: parent
+            // anchors.fill: parent
             anchors.top: topBar.bottom
             anchors.bottom: parent.bottom
             anchors.left: parent.left
@@ -196,10 +198,7 @@ Window {
             }
         }
     }
+
 }
 
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/
+

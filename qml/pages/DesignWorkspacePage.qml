@@ -179,112 +179,44 @@ Item {
         }
     }
 
-    ListView {
-        id: actionList
-        width: 150
-        height: 50
+    Rectangle {
+        id: historyPanel
+        width: 250
+        color: "#e3e3e3"
+        radius: 8
+        border.color: "#707070"
+        border.width: 2
 
         anchors.top: addContainer.bottom
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 10
-//        spacing: 5
 
-        delegate: actionDelegate
-        model: actionlistModel
-
-        section.delegate: action_sectionDelegate
-        section.property: "airfoil"
-
-        Rectangle {
-            id: actionlistBg
-            color: "#e3e3e3"
-            radius: 5
-            z: -1
-            border.color: "#707070"
-            border.width: 2
+        ColumnLayout {
             anchors.fill: parent
-        }
+            anchors.margins: 10
+            spacing: 8
 
-        Component {
-            id: action_sectionDelegate
-            Item {
-                id: rectangle
+            Label {
+                text: qsTr("Transformation History")
+                font.pointSize: 12
+                font.bold: true
+            }
 
-                width: actionList.width - 5 // actionList.childrenRect.width //actionList.contentItem.width
-                height: sectiontext.height + 15
+            TransformationList {
+                id: transformationList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                model: airfoilActionModel
+            }
 
-                Rectangle {
-                    id: action_child
-                    anchors.fill: parent
-                    anchors.margins: 5
-                    color: "lightsteelblue"
-                    border.width: 2
-                    radius: 5
-                    border.color: "#5094ee"
-//                    Rectangle {
-//                        width: 2
-//                        //height: actionList.section.
-//                        //height: actionList.contentHeight
-//                    }
-                }
-                Label {
-                    id: sectiontext
-                    text: section
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 10
-                    font.bold: true
-                }
-            }
-        }
-        ListModel {
-            id: actionlistModel
-            ListElement {
-                actionName: "load";
-                airfoil: "NACA 2212"
-            }
-            ListElement {
-                actionName: "rotate";
-                airfoil: "NACA 2212"
-            }
-            ListElement {
-                actionName: "translate";
-                airfoil: "NACA 2212"
-            }
-            ListElement {
-                actionName: "scale";
-                airfoil: "NACA 2212"
-            }
-            ListElement {
-                actionName: "load";
-                airfoil: "NACA 2208"
-            }
-            ListElement {
-                actionName: "scale";
-                airfoil: "NACA 2208"
-            }
-        }
-
-        Component {
-            id: actionDelegate
-            Rectangle {
-                x: 10
-                width: 5
-                height: childrenRect.height //+ 2
-                color: "black"
-                border.width: 2
-//                radius: border.width
-
-                Label {
-                    text: actionName
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 12
-                }
+            Label {
+                visible: airfoilActionModel.count === 0
+                text: qsTr("No transformations recorded yet.")
+                color: "#6c757d"
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                Layout.fillWidth: true
             }
         }
     }
@@ -326,7 +258,7 @@ Item {
         id: foil_chart
         objectName: "foil_chart"
         anchors.top: addContainer.bottom
-        anchors.left: actionList.right
+        anchors.left: historyPanel.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: 10

@@ -104,4 +104,7 @@ tests/
 *.docx
 
 # database files
-projects.db
+*.db
+
+# blog files
+blog.*

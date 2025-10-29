@@ -6,6 +6,8 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ![Main screen](screenshots/main_screen.png)
 
+![Select Project](screenshots/select_project.png)
+
 ## Features
 
 - **Interactive Plotting**: Visualize airfoil data using interactive plots that allow for zooming, panning, and dynamic updates.
@@ -32,6 +34,7 @@ This project is licensed under the GPU-3.0 License - see the [LICENSE](LICENSE) 
 
 ## Coming Features
 
+- **Multiple airfoil sources**: Load airfoils from multiple sources to create a detailed repository of airfoils.
 - **Airfoil analysis**: Use numerical solvers to perform preliminary analysis on airfoils.
 - **Multiple Airfoil Support**: Load data for multiple airfoils and compare their performance side by side.
 - **Export Objects to CAD**: Provide support to export wings to CAD software rather than only 2D airfoils.

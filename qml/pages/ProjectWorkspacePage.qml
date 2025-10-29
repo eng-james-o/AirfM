@@ -31,7 +31,7 @@ Item {
 
             Loader {
                 id: designLoader
-                source: Qt.resolvedUrl("MainPage.qml")
+                source: Qt.resolvedUrl("DesignWorkspacePage.qml")
             }
 
             Loader {

@@ -16,115 +16,122 @@ Item {
     //    width: parent.width
     //    height: parent.height
 
-    ColumnLayout {
-        id: sideLayout
-        anchors.rightMargin: 30
-        spacing: 10
+    SwipeView {
+        id: selectionSwipeView
+        anchors.fill: parent
+        interactive: false
 
-        //        anchors.bottom: parent.bottom
-        //        anchors.bottomMargin: 50
-        anchors {
-            left: parent.left
-            leftMargin: 30
-            top: parent.top
-            right: mainLayout.left
-            topMargin: 115
-        }
+        Item {
+            id: projectOverviewPage
+            width: selectionSwipeView.width
+            height: selectionSwipeView.height
 
-        TextButton {
-            text: "Airfoil Library"
-            Layout.minimumWidth: 120
-            Layout.preferredWidth: 120
-            Layout.preferredHeight: 45
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: {
-                if (StackView.view) {
-                    StackView.view.push(Qt.resolvedUrl("AirfoilLibraryPage.qml"))
+            ColumnLayout {
+                id: sideLayout
+                anchors.rightMargin: 30
+                spacing: 10
+
+                //        anchors.bottom: parent.bottom
+                //        anchors.bottomMargin: 50
+                anchors {
+                    left: parent.left
+                    leftMargin: 30
+                    top: parent.top
+                    right: mainLayout.left
+                    topMargin: 115
+                }
+
+                TextButton {
+                    text: "Airfoil Library"
+                    Layout.minimumWidth: 120
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: 45
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: selectionSwipeView.currentIndex = 1
+                }
+                TextButton {
+                    text: "Refresh Library"
+                    Layout.minimumWidth: 120
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: 45
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: {
+                        const summary = projectController.refresh_airfoil_library()
+                        if (summary.errors.length > 0) {
+                            libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped + ", errors: " + summary.errors.join(", ")
+                        } else {
+                            libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped
+                        }
+                    }
+                }
+                Text {
+                    text: libraryStatus
+                    wrapMode: Text.WordWrap
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.maximumWidth: 160
+                    color: libraryStatus.indexOf("errors:") >= 0 ? "#ff6666" : "#21be2b"
+                }
+                TextButton {
+                    text: "Help"
+                    Layout.minimumWidth: 120
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: 45
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: {
+                        // Logic to show help
+                        console.log("Show help")
+                    }
                 }
             }
-        }
-        TextButton {
-            text: "Refresh Library"
-            Layout.minimumWidth: 120
-            Layout.preferredWidth: 120
-            Layout.preferredHeight: 45
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: {
-                const summary = projectController.refresh_airfoil_library()
-                if (summary.errors.length > 0) {
-                    libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped + ", errors: " + summary.errors.join(", ")
-                } else {
-                    libraryStatus = "Downloaded " + summary.saved + ", skipped " + summary.skipped
+
+            ColumnLayout {
+                id: mainLayout
+                width: 600
+                //        width: 640
+                anchors.right: parent.right
+                anchors.rightMargin: 30
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 50
+                anchors.top: parent.top
+                anchors.topMargin: 50
+                spacing: 20
+
+                RowLayout {
+                    spacing: 50
+
+                    Label {
+                        color: "#ddffffff"
+                        Layout.preferredWidth: 100
+                        text: "Projects"
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    TextButton {
+                        text: "New"
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 45
+                        Layout.alignment: Qt.AlignHCenter
+                        onClicked: {
+                            // Logic to create a new project
+                            console.log("Create New Project clicked")
+                            newProjectDialog.open()
+                        }
+                    }
+                    TextButton {
+                        text: "Open"
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 45
+                        Layout.alignment: Qt.AlignHCenter
+                        onClicked: {
+                            // Logic to open an existing project
+                            console.log("Open Project clicked")
+                            openProjectDialog.open()
+                            // projectController.open(openProjectDialog.fileUrl)
+                        }
+                    }
                 }
-            }
-        }
-        Text {
-            text: libraryStatus
-            wrapMode: Text.WordWrap
-            Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: 160
-            color: libraryStatus.indexOf("errors:") >= 0 ? "#ff6666" : "#21be2b"
-        }
-        TextButton {
-            text: "Help"
-            Layout.minimumWidth: 120
-            Layout.preferredWidth: 120
-            Layout.preferredHeight: 45
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: {
-                // Logic to show help
-                console.log("Show help")
-            }
-        }
-    }
-
-    ColumnLayout {
-        id: mainLayout
-        width: 600
-        //        width: 640
-        anchors.right: parent.right
-        anchors.rightMargin: 30
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 50
-        anchors.top: parent.top
-        anchors.topMargin: 50
-        spacing: 20
-
-        RowLayout {
-            spacing: 50
-
-            Label {
-                Layout.preferredWidth: 100
-                text: "Projects"
-                font.pixelSize: 24
-                horizontalAlignment: Text.AlignHCenter
-                Layout.alignment: Qt.AlignHCenter
-            }
-
-            TextButton {
-                text: "New"
-                Layout.preferredWidth: 100
-                Layout.preferredHeight: 45
-                Layout.alignment: Qt.AlignHCenter
-                onClicked: {
-                    // Logic to create a new project
-                    console.log("Create New Project clicked")
-                    newProjectDialog.open()
-                }
-            }
-            TextButton {
-                text: "Open"
-                Layout.preferredWidth: 100
-                Layout.preferredHeight: 45
-                Layout.alignment: Qt.AlignHCenter
-                onClicked: {
-                    // Logic to open an existing project
-                    console.log("Open Project clicked")
-                    openProjectDialog.open()
-                    // projectController.open(openProjectDialog.fileUrl)
-                }
-            }
-        }
 
         ListView {
             id: recentProjectsList
@@ -309,6 +316,29 @@ Item {
                     // set the projectLocationField text to the selected folder
                     projectLocationField.text = fileUrl
                 }
+            }
+        }
+    } // closes newProjectDialog
+}
+
+        Item {
+            id: librarySwipePage
+            width: selectionSwipeView.width
+            height: selectionSwipeView.height
+
+            Loader {
+                id: libraryLoader
+                anchors.fill: parent
+                source: Qt.resolvedUrl("AirfoilLibraryPage.qml")
+                active: selectionSwipeView.currentIndex === 1
+            }
+
+            TextButton {
+                text: qsTr("Back to Projects")
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: 20
+                onClicked: selectionSwipeView.currentIndex = 0
             }
         }
     }
