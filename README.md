@@ -4,7 +4,9 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ![Splash screen](screenshots/splash_screen.png)
 
-![Main screen](screenshots/main_screen.png)
+![Main screen](screenshots/design_workspace.png)
+
+![Select Project](screenshots/select_project.png)
 
 ## Features
 
@@ -17,7 +19,7 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ### Prerequisites
 
-- Python: 3.5 - 3.11 (Ensure you are using a compatible version)
+- Python: 3.5 - 3.11 (Ensure you are using a compatible version pair for python and qt)
 - Qt: 5.15.11 - 5.15.15 (Required by PySide2)
 - PySide2: Compatible with Qt 5.15.11 - 5.15.15
 - Qt Charts (included with PySide2)
@@ -26,16 +28,14 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 Contributions are welcome! If you'd like to contribute to this project, mail me at [james.o.oluwadare@gmail.com](james.o.oluwadare@gmail.com)
 
-## Credits
-
-Thanks to Prof. Selig for his airfoil library. I haven't been able to contact him to let him know about this project, but his contribution to the aerospace field is deeply appreciated.
-
 ## License
 
 This project is licensed under the GPU-3.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Coming Features
 
+- **Multiple airfoil sources**: Load airfoils from multiple sources to create a detailed repository of airfoils.
 - **Airfoil analysis**: Use numerical solvers to perform preliminary analysis on airfoils.
 - **Multiple Airfoil Support**: Load data for multiple airfoils and compare their performance side by side.
 - **Export Objects to CAD**: Provide support to export wings to CAD software rather than only 2D airfoils.
+- **3D print**: Generate G-code directly for 3D-printers and hot-wire cutters

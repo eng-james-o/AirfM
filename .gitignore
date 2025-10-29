@@ -101,3 +101,11 @@ airfoils/airfoil_archive2.zip
 
 .vscode
 *.ipynb
+
+blog/
+*.docx
+blog.*
+tests/
+!tests/*.py
+*.db
+projects.db
