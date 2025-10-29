@@ -107,4 +107,4 @@ tests/
 *.db
 
 # blog files
-blog.*
+blog/

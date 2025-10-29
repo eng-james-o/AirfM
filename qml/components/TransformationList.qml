@@ -7,6 +7,7 @@ Item {
     implicitWidth: listView.implicitWidth
     implicitHeight: listView.implicitHeight
     property alias model: listView.model
+    property int filterAirfoilId: -1
 
     ListView {
         id: listView
@@ -15,7 +16,12 @@ Item {
         spacing: 8
 
         delegate: Frame {
+            id: card
             width: ListView.view.width
+            property bool matchesFilter: root.filterAirfoilId < 0 || model.id === root.filterAirfoilId
+            implicitHeight: contentLayout.implicitHeight + 24
+            height: matchesFilter ? implicitHeight : 0
+            visible: matchesFilter
             background: Rectangle {
                 radius: 10
                 color: "#f5f7fb"
@@ -24,6 +30,7 @@ Item {
             }
 
             ColumnLayout {
+                id: contentLayout
                 anchors.fill: parent
                 anchors.margins: 12
                 spacing: 6

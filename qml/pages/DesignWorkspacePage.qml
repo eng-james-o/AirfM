@@ -11,6 +11,71 @@ Item {
     implicitWidth: 880
     id: content_page
     property int spacing: 6
+    property int selectedAirfoilId: -1
+
+    function findAirfoilIndexById(airfoilId) {
+        if (!airfoilActionModel || airfoilId < 0)
+            return -1
+        for (var i = 0; i < airfoilActionModel.count; ++i) {
+            var entry = airfoilActionModel.get(i)
+            if (entry.id === airfoilId)
+                return i
+        }
+        return -1
+    }
+
+    function airfoilExists(airfoilId) {
+        return findAirfoilIndexById(airfoilId) !== -1
+    }
+
+    function getSelectedAirfoil() {
+        var index = findAirfoilIndexById(selectedAirfoilId)
+        return index >= 0 ? airfoilActionModel.get(index) : null
+    }
+
+    function nextAirfoilId() {
+        var maxId = -1
+        if (airfoilActionModel) {
+            for (var i = 0; i < airfoilActionModel.count; ++i) {
+                var entry = airfoilActionModel.get(i)
+                if (entry && entry.id > maxId)
+                    maxId = entry.id
+            }
+        }
+        return maxId + 1
+    }
+
+    function updateAirfoilListSelection() {
+        if (typeof airfoilList === "undefined")
+            return
+        if (!airfoilActionModel || selectedAirfoilId < 0) {
+            airfoilList.currentIndex = -1
+            return
+        }
+        var index = findAirfoilIndexById(selectedAirfoilId)
+        airfoilList.currentIndex = index
+        if (index >= 0)
+            airfoilList.positionViewAtIndex(index, ListView.Visible)
+    }
+
+    function ensureSelectedAirfoil() {
+        if (!airfoilActionModel || airfoilActionModel.count === 0) {
+            if (selectedAirfoilId !== -1) {
+                selectedAirfoilId = -1
+            }
+            updateAirfoilListSelection()
+            return
+        }
+        if (!airfoilExists(selectedAirfoilId)) {
+            var lastEntry = airfoilActionModel.get(airfoilActionModel.count - 1)
+            selectedAirfoilId = lastEntry ? lastEntry.id : -1
+        } else {
+            updateAirfoilListSelection()
+        }
+    }
+
+    onSelectedAirfoilIdChanged: updateAirfoilListSelection()
+    Component.onCompleted: ensureSelectedAirfoil()
 
     Rectangle {
         id: addContainer
@@ -55,23 +120,42 @@ Item {
                 }
             }
             TextButton {
+                id: addAirfoilButton
+                text: qsTr("Add")
+                Layout.preferredWidth: 90
+                Layout.minimumHeight: 40
+                colorDefault: "white"
+                onClicked: {
+                    if (!projectController || select_foilCombobox.currentIndex < 0)
+                        return
+                    var airfoilName = select_foilCombobox.currentText
+                    if (!airfoilName || airfoilName.length === 0)
+                        return
+                    var airfoilId = content_page.nextAirfoilId()
+                    projectController.add_airfoil(airfoilId, airfoilName, select_foilCombobox.currentValue)
+                    content_page.selectedAirfoilId = airfoilId
+                    Qt.callLater(content_page.ensureSelectedAirfoil)
+                }
+            }
+            TextButton {
                 id: openButton
                 text: qsTr("Open")
-//                Layout.minimumWidth: 60
+                // Layout.minimumWidth: 60
                 Layout.minimumHeight: 40
                 colorDefault: "white"
             }
             TextButton {
                 id: duplicateButton
                 text: qsTr("Duplicate")
-//                Layout.fillWidth: true
+                // Layout.fillWidth: true
                 Layout.minimumHeight: 40
-//                Layout.minimumWidth: 80
+                // Layout.minimumWidth: 80
 
                 colorDefault: "white"
             }
         }
     }
+
     Rectangle {
         id: transformContainer
         //        anchors.left: addContainer.right
@@ -106,7 +190,7 @@ Item {
                 id: translateButton
                 text: qsTr("Translate")
                 Layout.fillWidth: true
-//                Layout.minimumWidth: 80
+                // Layout.minimumWidth: 80
                 Layout.minimumHeight: 40
                 colorDefault: "white"
                 onClicked: {
@@ -199,8 +283,8 @@ Item {
 
             Label {
                 text: qsTr("Transformation History")
-                font.pointSize: 12
-                font.bold: true
+                font.pointSize: 10
+                // font.bold: true
             }
 
             TransformationList {
@@ -208,11 +292,69 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 model: airfoilActionModel ? airfoilActionModel : null
+                filterAirfoilId: content_page.selectedAirfoilId
             }
 
             Label {
-                visible: airfoilActionModel && airfoilActionModel.count === 0
-                text: qsTr("No transformations recorded yet.")
+                visible: airfoilActionModel && airfoilActionModel.count > 0 && selectedAirfoilId < 0
+                text: qsTr("Select an airfoil below to view its transformations.")
+                color: "#6c757d"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            ListView {
+                id: airfoilList
+                Layout.fillWidth: true
+                Layout.preferredHeight: visible ? 140 : 0
+                clip: true
+                spacing: 6
+                visible: airfoilActionModel && airfoilActionModel.count > 0
+                model: airfoilActionModel ? airfoilActionModel : null
+                currentIndex: -1
+
+                delegate: Rectangle {
+                    width: airfoilList.width
+                    height: 52
+                    radius: 6
+                    property int airfoilId: model.id
+                    property bool isSelected: airfoilId === content_page.selectedAirfoilId
+                    color: isSelected ? "#2d3348" : "transparent"
+                    border.color: isSelected ? "#4c9ffe" : "#2d3348"
+                    border.width: isSelected ? 2 : 1
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 2
+
+                        Label {
+                            text: model.name
+                            font.bold: true
+                            color: "#f5f5f5"
+                        }
+
+                        Label {
+                            text: qsTr("ID: %1").arg(model.id)
+                            color: "#94a3b8"
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            content_page.selectedAirfoilId = airfoilId
+                        }
+                    }
+                }
+            }
+
+            Label {
+                visible: !airfoilActionModel || airfoilActionModel.count === 0
+                text: qsTr("No airfoils have been added to the design workspace yet.")
                 color: "#6c757d"
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
@@ -237,6 +379,17 @@ Item {
     //        anchors.margins: 10
     //    }
     //
+
+    Connections {
+        target: airfoilActionModel ? airfoilActionModel : null
+        function onRowsInserted(parent, first, last) { ensureSelectedAirfoil() }
+        function onRowsRemoved(parent, first, last) { ensureSelectedAirfoil() }
+        function onModelReset() { ensureSelectedAirfoil() }
+        function onDataChanged(topLeft, bottomRight, roles) {
+            if (airfoilExists(selectedAirfoilId))
+                updateAirfoilListSelection()
+        }
+    }
 
     TextButton {
         // eliminate button by assigning its function to onCurrentItemCHanged of the combobox
