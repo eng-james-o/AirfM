@@ -24,14 +24,8 @@ from logger_config import logger
 # TODO:
 # - Add the database setup to the splash screen
 # - Make the splash screen do some more useful functions, such as creating the necessary databases, components, etc.
-# - Add the ability to select a project from the recent projects list
-# - Setup the database for the recent projects list
 
 # FIXME:
-# - Fix the StandardPaths in the qml
-# - Fix the loading of the main qml file, screens are being muddled up
-# - Fix the connections to the dataModel and airfoilListModel
-# - The appbar button tips and hover effects only work on the upper part of the buttons
 
 
 if __name__ == "__main__":
@@ -54,7 +48,6 @@ if __name__ == "__main__":
         root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
         root_context.setContextProperty("airfoilActionModel", project_controller.airfoil_action_model)
         root_context.setContextProperty("recentProjectsModel", recent_projects_model)
-        root_context.setContextProperty("recentProjectsModel", recent_projects_model)
         try:
             engine.load(QUrl.fromLocalFile(os.path.join(globals.APP_SHELL_QML_FILE)))
             splash_screen = engine.rootObjects()[0]
@@ -70,6 +63,7 @@ if __name__ == "__main__":
         root_context.setContextProperty("dataModel", data_model)
         root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
         root_context.setContextProperty("airfoilActionModel", project_controller.airfoil_action_model)
+        root_context.setContextProperty("recentProjectsModel", recent_projects_model)
 
     # Connect signals for transitions
     splash_controller.loadingComplete.connect(load_project_page)
