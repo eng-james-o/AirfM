@@ -207,11 +207,11 @@ Item {
                 id: transformationList
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                model: airfoilActionModel
+                model: airfoilActionModel ? airfoilActionModel : null
             }
 
             Label {
-                visible: airfoilActionModel.count === 0
+                visible: airfoilActionModel && airfoilActionModel.count === 0
                 text: qsTr("No transformations recorded yet.")
                 color: "#6c757d"
                 wrapMode: Text.WordWrap
@@ -287,7 +287,8 @@ Item {
         }
 
         Connections {
-            target: dataModel
+            target: typeof dataModel !== "undefined" ? dataModel : null
+            enabled: target !== null
             // update this name to the new
             // update the signal, such that the new data is raised with the signal
             function onDataChanged () {

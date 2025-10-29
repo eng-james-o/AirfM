@@ -41,7 +41,7 @@ Item {
 
                 TransformationList {
                     width: parent.width - 24
-                    model: airfoilActionModel
+                    model: airfoilActionModel ? airfoilActionModel : null
                 }
             }
         }

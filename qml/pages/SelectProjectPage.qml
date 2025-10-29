@@ -19,6 +19,7 @@ Item {
     SwipeView {
         id: selectionSwipeView
         anchors.fill: parent
+        // interactive: true
         interactive: false
 
         Item {
@@ -133,61 +134,88 @@ Item {
                     }
                 }
 
-        ListView {
-            id: recentProjectsList
-            height: 450
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            clip: true
-            Rectangle {
-                id: listviewBg
-                color: "#00000000"
-                radius: 5
-                z: -1
-                border.color: "#707070"
-                border.width: 2
-                anchors.fill: parent
-            }
+                ListView {
+                    id: recentProjectsList
+                    height: 450
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    clip: true
 
-            model: recentProjectsModel
-
-            delegate: Item {
-                id: element
-                width: parent.width
-                height: 40
-
-                RowLayout {
-                    spacing: 10
-
-                    Text {
-                        text: model.name
-                        Layout.alignment: Qt.AlignLeft
+                    Rectangle {
+                        id: listviewBg
+                        color: "#00000000"
+                        radius: 5
+                        z: -1
+                        border.color: "#707070"
+                        border.width: 2
+                        anchors.fill: parent
                     }
 
-                    Text {
-                        text: model.location
-                        Layout.alignment: Qt.AlignLeft
-                    }
+                    model: recentProjectsModel
 
-                    Text {
-                        text: model.date
-                        Layout.alignment: Qt.AlignLeft
+                    delegate: Item {
+                        id: element
+                        width: parent.width
+                        height: 56
+                        property bool hovered: false
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            radius: 6
+                            color: hovered ? "#2d3348" : "transparent"
+                            border.color: hovered ? "#4c9ffe" : "transparent"
+                            border.width: hovered ? 1 : 0
+                        }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 12
+
+                            Label {
+                                text: model.name
+                                font.bold: true
+                                color: "#f5f5f5"
+                                Layout.preferredWidth: 160
+                            }
+
+                            Label {
+                                text: model.path
+                                color: "#cbd5f5"
+                                elide: Text.ElideMiddle
+                                Layout.fillWidth: true
+                            }
+
+                            Label {
+                                text: model.date
+                                color: "#94a3b8"
+                                Layout.preferredWidth: 170
+                                horizontalAlignment: Text.AlignRight
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: element.hovered = true
+                            onExited: element.hovered = false
+                            onClicked: {
+                                projectController.open_project(model.path)
+                        }
                     }
+                }
+
+                Label {
+                    visible: recentProjectsModel && recentProjectsModel.count === 0
+                    text: qsTr("Recently opened projects will appear here.")
+                    color: "#94a3b8"
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
         }
-    }
-    Dialogs.FileDialog {
-        id: openProjectDialog
-        title: qsTr("Open Project")
-        nameFilters: [ "Airfm project files (*.afm)", "Selig airfoils (*.dat)" ]
-        folder: shortcuts.Documents
-        onSelectionAccepted: {
-            // Logic to open the selected project
-            console.log("Selected file: " + fileUrl)
-            projectController.open_project(fileUrl)
-        }
-    }
     Dialog {
         id: newProjectDialog
         visible: false
@@ -306,17 +334,6 @@ Item {
                 placeholderText: "Enter additional project details"
             }
 
-            Dialogs.FileDialog {
-                id: locationDialog
-                title: "Select Project Directory"
-                // folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-                folder: shortcuts.home
-                selectFolder: true
-                onAccepted: {
-                    // set the projectLocationField text to the selected folder
-                    projectLocationField.text = fileUrl
-                }
-            }
         }
     } // closes newProjectDialog
 }
@@ -342,6 +359,25 @@ Item {
             }
         }
     }
-}
 
+    Dialogs.FileDialog {
+        id: openProjectDialog
+        title: qsTr("Open Project")
+        nameFilters: [ "Airfm project files (*.afm)", "Selig airfoils (*.dat)" ]
+        folder: shortcuts.Documents
+        onSelectionAccepted: {
+            console.log("Selected file: " + fileUrl)
+            projectController.open_project(fileUrl)
+        }
+    }
+
+    Dialogs.FileDialog {
+        id: locationDialog
+        title: qsTr("Select Project Directory")
+        // folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        folder: shortcuts.home
+        selectFolder: true
+        onAccepted: projectLocationField.text = fileUrl
+    }
+}
 

@@ -70,11 +70,12 @@ Item {
 
                 ColumnLayout {
                     id: listColumn
-                    width: parent.width - 24
+                    width: libraryPage.width - 64
+                    implicitWidth: width
                     spacing: 12
 
                     Repeater {
-                        model: airfoilListModel
+                        model: airfoilListModel ? airfoilListModel : 0
                         delegate: AirfoilInfoCard {
                             Layout.fillWidth: true
                             title: model.name
@@ -85,7 +86,7 @@ Item {
                     }
 
                     Label {
-                        visible: airfoilListModel.rowCount() === 0
+                        visible: airfoilListModel && airfoilListModel.rowCount() === 0
                         text: qsTr("No airfoils found. Use the refresh button to download the UIUC archive.")
                         wrapMode: Text.Wrap
                         horizontalAlignment: Text.AlignHCenter

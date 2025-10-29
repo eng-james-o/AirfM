@@ -21,13 +21,19 @@ class ProjectDatabase:
     def add_project(self, name, location, date):
         with self.connection:
             self.connection.execute(
+                "DELETE FROM projects WHERE location = ?",
+                (location,)
+            )
+            self.connection.execute(
                 "INSERT INTO projects (name, location, date) VALUES (?, ?, ?)",
                 (name, location, date)
             )
 
     def get_projects(self):
         with self.connection:
-            return self.connection.execute("SELECT name, location, date FROM projects").fetchall()
+            return self.connection.execute(
+                "SELECT name, location, date FROM projects ORDER BY datetime(date) DESC"
+            ).fetchall()
 
     def close(self):
         self.connection.close()

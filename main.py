@@ -50,6 +50,11 @@ if __name__ == "__main__":
         logger.info("Splash screen Loading complete")
         engine.clearComponentCache()
         root_context.setContextProperty("projectController", project_controller)
+        root_context.setContextProperty("dataModel", data_model)
+        root_context.setContextProperty("airfoilListModel", airfoil_listmodel)
+        root_context.setContextProperty("airfoilActionModel", project_controller.airfoil_action_model)
+        root_context.setContextProperty("recentProjectsModel", recent_projects_model)
+        root_context.setContextProperty("recentProjectsModel", recent_projects_model)
         try:
             engine.load(QUrl.fromLocalFile(os.path.join(globals.APP_SHELL_QML_FILE)))
             splash_screen = engine.rootObjects()[0]

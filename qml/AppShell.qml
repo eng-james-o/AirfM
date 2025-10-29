@@ -35,8 +35,8 @@ Window {
             resizeRight.visible = true
             resizeBottom.visible = true
             resizeApp.visible = true
-            bg.radius = bgRadius
-            bg.border.width = 3
+            frame.radius = bgRadius
+            frame.border.width = 3
         }
 
         function maximizeRestore(){
@@ -49,9 +49,9 @@ Window {
                 resizeRight.visible = false
                 resizeBottom.visible = false
                 resizeApp.visible = false
-                bg.radius = 0
-                bg.border.width = 0
-                btnMaximizeRestore.btnIconSource = "../images/svg_images/restore_icon.svg"
+                frame.radius = 0
+                frame.border.width = 0
+                topBar.maximizeButton.btnIconSource = "../assets/svg_images/restore_icon.svg"
             }
             else{
                 mainWindow.showNormal()
@@ -59,8 +59,8 @@ Window {
                 windowMargin = 10
                 // Resize visibility
                 internal.resetResizeBorders()
-                bg.border.width = 3
-                btnMaximizeRestore.btnIconSource = "../images/svg_images/maximize_icon.svg"
+                frame.border.width = 3
+                topBar.maximizeButton.btnIconSource = "../assets/svg_images/maximize_icon.svg"
             }
         }
 
@@ -71,19 +71,19 @@ Window {
                 windowMargin = 10
                 // Resize visibility
                 internal.resetResizeBorders()
-                bg.border.width = 3
-                btnMaximizeRestore.btnIconSource = "../images/svg_images/maximize_icon.svg"
+                frame.border.width = 3
+                topBar.maximizeButton.btnIconSource = "../assets/svg_images/maximize_icon.svg"
             }
         }
 
         function restoreMargins(){
             windowStatus = 0
             windowMargin = 10
-            bg.radius = bgRadius
+            frame.radius = bgRadius
             // Resize visibility
             internal.resetResizeBorders()
-            bg.border.width = 3
-            btnMaximizeRestore.btnIconSource = "../images/svg_images/maximize_icon.svg"
+            frame.border.width = 3
+            topBar.maximizeButton.btnIconSource = "../assets/svg_images/maximize_icon.svg"
         }
     }
 
@@ -91,7 +91,7 @@ Window {
         id: frame
         //opacity: 0
         color: "#1d1d2b"
-        radius: 20
+        radius: bgRadius
         border.color: "#33334c"
         border.width: 3
         anchors.fill: parent
@@ -193,7 +193,7 @@ Window {
         Connections {
             target: projectController
 
-            onProjectSelected: {
+            function onProjectSelected() {
                 main_stackView.push(Qt.resolvedUrl("pages/ProjectWorkspacePage.qml"));
             }
         }

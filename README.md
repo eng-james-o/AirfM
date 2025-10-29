@@ -38,3 +38,4 @@ This project is licensed under the GPU-3.0 License - see the [LICENSE](LICENSE) 
 - **Airfoil analysis**: Use numerical solvers to perform preliminary analysis on airfoils.
 - **Multiple Airfoil Support**: Load data for multiple airfoils and compare their performance side by side.
 - **Export Objects to CAD**: Provide support to export wings to CAD software rather than only 2D airfoils.
+- **3D print**: Generate G-code directly for 3D-printers and hot-wire cutters

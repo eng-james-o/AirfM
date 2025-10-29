@@ -7,6 +7,7 @@ Rectangle{
     property var navigationStack: null
     property int appBarRadius: 10
     property color appBarbg: "#33334c"
+    property alias maximizeButton: maxButton
 
     implicitWidth: 800
     height: 50

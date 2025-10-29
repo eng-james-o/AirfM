@@ -7,7 +7,7 @@ ComboBox {
     //property var customModel: []
     currentIndex: -1
 
-    model: airfoilListModel
+    model: airfoilListModel ? airfoilListModel : null
     textRole: "name"
     valueRole: "path"
     implicitWidth: 120

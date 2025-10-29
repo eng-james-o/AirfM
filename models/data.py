@@ -134,18 +134,30 @@ class RecentProjectsModel(QAbstractListModel):
         super().__init__(parent)
         self.db = ProjectDatabase(db_path)
         # self._data = list()
-        self._projects = self.db.get_projects()
+        self._projects = self._load_from_db()
+
+    def _load_from_db(self):
+        """Retrieve recent projects ordered by most recent access without duplicates."""
+        projects = self.db.get_projects()
+        seen_paths = set()
+        unique_projects = []
+        for name, path, date in projects:
+            if path in seen_paths:
+                continue
+            unique_projects.append((name, path, date))
+            seen_paths.add(path)
+        return unique_projects
     
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid() or not (0 <= index.row() < len(self._data)):
+        if not index.isValid() or not (0 <= index.row() < len(self._projects)):
             return None
         
         project = self._projects[index.row()]
 
         if role == RecentProjectsModel.PathRole:
-            return project[0] # project.path
+            return project[1] # project.path
         elif role == RecentProjectsModel.NameRole or role == Qt.DisplayRole:
-            return project[1] # project.name
+            return project[0] # project.name
         elif role == RecentProjectsModel.DateRole:
             return project[2] # project.date
         return None
@@ -155,9 +167,9 @@ class RecentProjectsModel(QAbstractListModel):
     
     def roleNames(self) -> Dict:
         roles = {
-            ProjectListModel.PathRole: b"path",
-            ProjectListModel.NameRole: b"name",
-            ProjectListModel.DateRole: b"date"
+            RecentProjectsModel.PathRole: b"path",
+            RecentProjectsModel.NameRole: b"name",
+            RecentProjectsModel.DateRole: b"date"
             }
         return roles
     
@@ -166,17 +178,13 @@ class RecentProjectsModel(QAbstractListModel):
         # Add the project to the database
         self.db.add_project(name, path, date)
         
-        # Add the project to the model
-        # TODO
-        # - change this implementation to simply refresh the model, instead of adding the item to the model
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._projects.append((name, path, date))
-        self.endInsertRows()
+        # Refresh so ordering reflects most recent access and duplicates are removed
+        self.refresh()
     
     @Slot()
     def refresh(self):
         self.beginResetModel()
-        self._projects = self.db.get_projects()
+        self._projects = self._load_from_db()
         self.endResetModel()
 
 ProjectModelItem = createModelItem("ProjectModelItem", ["name", "path", "date"])
