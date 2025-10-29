@@ -105,6 +105,7 @@ tests/
 
 # database files
 *.db
+projects.db
 
 # blog files
 blog/
