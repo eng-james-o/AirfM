@@ -4,7 +4,7 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ![Splash screen](screenshots/splash_screen.png)
 
-![Main screen](screenshots/main_screen.png)
+![Main screen](screenshots/design_workspace.png)
 
 ![Select Project](screenshots/select_project.png)
 
@@ -19,7 +19,7 @@ Welcome to Airfm, an Airfoil Data Visualization App! This project is designed to
 
 ### Prerequisites
 
-- Python: 3.5 - 3.11 (Ensure you are using a compatible version)
+- Python: 3.5 - 3.11 (Ensure you are using a compatible version pair for python and qt)
 - Qt: 5.15.11 - 5.15.15 (Required by PySide2)
 - PySide2: Compatible with Qt 5.15.11 - 5.15.15
 - Qt Charts (included with PySide2)
